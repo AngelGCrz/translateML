@@ -1,0 +1,131 @@
+{
+    "source": "eng",
+    "languages": [
+        {
+            "code": "eng",
+            "name": "English",
+            "tab": "ENG",
+            "folder": "eng",
+            "enabled": true
+        },
+        {
+            "code": "esp",
+            "name": "Español",
+            "tab": "ESP",
+            "folder": "esp",
+            "enabled": true
+        },
+        {
+            "code": "deu",
+            "name": "Deutsch",
+            "tab": "DEU",
+            "folder": "deu",
+            "enabled": true
+        },
+        {
+            "code": "ell",
+            "name": "Greek",
+            "tab": "ELL",
+            "folder": "ell",
+            "enabled": false
+        },
+        {
+            "code": "fra",
+            "name": "French",
+            "tab": "FRA",
+            "folder": "fra",
+            "enabled": false
+        },
+        {
+            "code": "ido",
+            "name": "Indonesian",
+            "tab": "IDO",
+            "folder": "ido",
+            "enabled": false
+        },
+        {
+            "code": "ita",
+            "name": "Italian",
+            "tab": "ITA",
+            "folder": "ita",
+            "enabled": false
+        },
+        {
+            "code": "jpn",
+            "name": "Japanese",
+            "tab": "JPN",
+            "folder": "jpn",
+            "enabled": false
+        },
+        {
+            "code": "kmb",
+            "name": "Khmer",
+            "tab": "KMB",
+            "folder": "kmb",
+            "enabled": false
+        },
+        {
+            "code": "krs",
+            "name": "Korean",
+            "tab": "KRS",
+            "folder": "krs",
+            "enabled": false
+        },
+        {
+            "code": "mly",
+            "name": "Malay",
+            "tab": "MLY",
+            "folder": "mly",
+            "enabled": false
+        },
+        {
+            "code": "por",
+            "name": "Portuguese",
+            "tab": "POR",
+            "folder": "por",
+            "enabled": false
+        },
+        {
+            "code": "rus",
+            "name": "Russian",
+            "tab": "RUS",
+            "folder": "rus",
+            "enabled": false
+        },
+        {
+            "code": "tha",
+            "name": "Thai",
+            "tab": "THA",
+            "folder": "tha",
+            "enabled": false
+        },
+        {
+            "code": "tur",
+            "name": "Turkish",
+            "tab": "TUR",
+            "folder": "tur",
+            "enabled": false
+        },
+        {
+            "code": "vie",
+            "name": "Vietnamese",
+            "tab": "VIE",
+            "folder": "vie",
+            "enabled": false
+        },
+        {
+            "code": "zh-hans",
+            "name": "Chinese (Simplified)",
+            "tab": "ZH-HANS",
+            "folder": "zh-hans",
+            "enabled": false
+        },
+        {
+            "code": "zh-hant",
+            "name": "Chinese (Traditional)",
+            "tab": "ZH-HANT",
+            "folder": "zh-hant",
+            "enabled": false
+        }
+    ]
+}

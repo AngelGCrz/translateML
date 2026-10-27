@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "translateml"
+dynamic = ["version"]
+description = "Textos multidioma para las plantillas info.json de juegos PixiJS desde Multidioma.xlsx."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["openpyxl>=3.1,<4"]
+
+[project.scripts]
+translateml = "translateml.cli:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "translateml.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["translateml*"]

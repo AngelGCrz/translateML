@@ -1,0 +1,32 @@
+{
+    "name": "pixi_info",
+    "description": "Plantillas info.json de juegos PixiJS (g402, g475, g490, g500).",
+    "detect": {
+        "any_of": ["rules.pages", "payTables", "payLines"]
+    },
+    "include": [
+        {"id": "rules_pages", "select": "rules.pages[*]", "mode": "recursive"},
+        {"id": "paytable_titles", "select": "payTables[*].titles[*].text", "mode": "value"},
+        {"id": "payline_titles", "select": "payLines[*].titles[*].text", "mode": "value"}
+    ],
+    "text_keys": ["text", "lines"],
+    "technical_keys": [
+        "fontName", "align", "color", "size", "offset", "stroke", "scale",
+        "path", "src", "font", "gap", "gapX", "rect", "symbols", "settings",
+        "tag"
+    ],
+    "technical_values": [
+        "^rgba?\\([^)]*\\)$",
+        "^#[0-9A-Fa-f]{3,8}$",
+        "^\\s*-?\\d+(\\.\\d+)?\\s*,\\s*-?\\d+(\\.\\d+)?\\s*$",
+        "\\.(png|jpe?g|webp|svg|json|atlas|mp3|ogg|wav)$",
+        "^[a-z0-9]+(_[a-z0-9]+)+$",
+        "^res\\.[\\w.]+$"
+    ],
+    "protected_tokens": [
+        "##[^#\\n]+##",
+        "\\{[A-Za-z_][A-Za-z0-9_]*\\}"
+    ],
+    "protected_prefix": "^(?:\\s|•|\\{[A-Za-z_][A-Za-z0-9_]*\\})*",
+    "protected_suffix": "\\s*$"
+}

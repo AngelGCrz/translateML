@@ -1,0 +1,325 @@
+{
+    "fontName": "altehaasgrotesk bold",
+    "logo": {
+        "order": 1,
+        "path": "info_logo_png",
+        "scale": 0.94,
+        "offset": "0,380"
+    },
+    "background": {
+        "path": "info1_png",
+        "offset": "0,-8"
+    },
+    "payTables": [
+        {
+            "images": [
+                {
+                    "path": "info_support_small_png",
+                    "offset": "-392,190"
+                },
+                {
+                    "path": "info_support_small_png",
+                    "offset": "-392,-30"
+                },
+                {
+                    "path": "info_support_small_png",
+                    "offset": "-392,-250"
+                },
+                {
+                    "path": "info_support_small_png",
+                    "offset": "392,190"
+                },
+                {
+                    "path": "info_support_small_png",
+                    "offset": "392,-30"
+                },
+                {
+                    "path": "info_support_small_png",
+                    "offset": "392,-250"
+                },
+                {
+                    "path": "info_support_large_png",
+                    "offset": "0,-20"
+                },
+                {
+                    "src": "sym_1.png",
+                    "scale": 0.33,
+                    "offset": "-487,205"
+                },
+                {
+                    "src": "sym_2.png",
+                    "scale": 0.48,
+                    "offset": "300,195"
+                },
+                {
+                    "src": "sym_3.png",
+                    "scale": 0.48,
+                    "offset": "-480,-20"
+                },
+                {
+                    "src": "sym_4.png",
+                    "scale": 0.48,
+                    "offset": "300,-20"
+                },
+                {
+                    "src": "sym_5.png",
+                    "scale": 0.42,
+                    "offset": "-510,-195"
+                },
+                {
+                    "src": "sym_6.png",
+                    "scale": 0.42,
+                    "offset": "-470,-295"
+                },
+                {
+                    "src": "sym_7.png",
+                    "scale": 0.42,
+                    "offset": "270,-195"
+                },
+                {
+                    "src": "sym_8.png",
+                    "scale": 0.42,
+                    "offset": "315,-295"
+                },
+                {
+                    "src": "sym_9.png",
+                    "scale": 0.5,
+                    "offset": "0,22"
+                }
+            ],
+            "titles": [
+                {
+                    "text": "13+\n11-12\n9-10",
+                    "offset": "-1111420,180",
+                    "fontName": "altehaasgrotesk bold",
+                    "size": 28,
+                    "align": "left",
+                    "rect":[300,240],
+                    "color": "rgb(255,255,255)"
+                },
+                {
+                    "text": "SUBMARINE",
+                    "size": 40,
+                    "color": "rgb(255,204,2)",
+                    "offset": "0,160",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(203,104,37)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 20,
+                    "color": "rgb(255,255,255)",
+                    "offset": "-330,-180",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 20,
+                    "color": "rgb(255,255,255)",
+                    "offset": "450,-180",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                }
+            ]
+        }
+    ],
+    "rules": {
+        "settings": {
+			"titles": {
+                "font": {
+                    "size": 55,
+                    "color": "rgb(254,192,2)",
+                    "align": "center",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(254,192,2)"
+                    }
+                },
+                "offset": "0,280"
+            },
+			"items": {
+                "font": {
+                    "size": 26,
+                    "color": "rgb(255,255,255)",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "symbols": {
+                    "sym_1": {
+                        "scale": 0.46,
+                        "gapX": 0
+                    },
+                    "sym_8": {
+                        "scale": 0.215,
+                        "gapX": -9
+                    },
+                    "sym_9": {
+                        "scale": 0.25,
+                        "gapX": -9
+                    },
+                    "sym_12": {
+                        "scale": 0.46,
+                        "gapX": 0
+                    },
+                    "sym_13": {
+                        "scale": 0.46,
+                        "gapX": 0
+                    },
+                    "sym_14": {
+                        "scale": 0.46,
+                        "gapX": 0
+                    },
+                    "text_mini_jackpot": {
+                        "scale": 0.5,
+                        "gapX": 2
+                    },
+                    "text_minor_jackpot": {
+                        "scale": 0.5,
+                        "gapX": 2
+                    },
+                    "text_major_jackpot": {
+                        "scale": 0.5,
+                        "gapX": 2
+                    },
+                    "text_grand_jackpot": {
+                        "scale": 0.5,
+                        "gapX": 2
+                    }
+                    
+                },
+                "gap": 35,
+                "offset": "-550,200"
+            }
+        },
+        "pages": [
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Payouts are made according to the pay table.","",
+                        "• Coinciding wins of different symbols are added.","",
+                        "• Winning combinations are multiplied by the bet per reel cost.","",
+                        "•  ##sym_9.png## symbol could be appears on all reels.","",
+                        "• All symbols pay on any position, including scattered ##sym_9.png## .","",
+                        "• All values are shown as wins in coins.","",
+                        "• The total number of times that the same symbol appear on the combination ","",
+                        "   determines the value of the wins."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "FREE GAMES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The Free Games Feature is triggered when scattered ##sym_9.png## appears","",
+                        "   three or more times in a combination.","",
+                        "• 15 free games are awarded when 3 or more ##sym_9.png## symbols appear.","",
+                        "• Multipliers appear during the Free Games.","",
+                        "• Free Game multipliers accumulate and apply to the current win.","",
+                        "• Multipliers will only accumulate on a winning free game.","",
+                        "• All accumulated multipliers are added together."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "FREE GAMES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The accumulated multiplier applies only to wins featuring a Multiplier symbol.","",
+                        "• The Free Games Feature cannot be retriggered.","",
+                        "• Free Games Feature wins are added to payline wins and ##sym_9.png## symbol wins."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "TUMBLE FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The Tumble Feature is triggered when winning occurs in a combination.","",
+                        "• All prizes are paid and all winning symbols disappear after the spin.","",
+                        "• The remaining symbols go down to the bottom of the screen and the empty ","",
+                        "   positions are replaced with symbols coming from above.","",
+                        "• The symbols will continue going down until no more winning combinations ","",
+                        "   appear as a result of the tumbling. ","",
+                        "• There is no maximum limit of possible number of tumbles. "
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "TUMBLE FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The wins of all of the tumbles resulted from a base spin are added to the ","",
+                        "   original combination wins.","",
+                        "• When a MULTIPLIER appears in a winning combination, the total amount ","",
+                        "   obtained during that spin (including all prizes from the Tumble Feature) are multiplied","",
+                        "• Multiple Multipliers sum together to multiply the total spin win."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "TUMBLE FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Whenever a MULTIPLIER symbol lands, it reveals a multiplier value based on the ","",
+                        "   current game mode. In the NORMAL GAME, possible values are 2×, 3×, 4×, 5×, 6×, 7×, ","",
+                        "   8×, 9× or 10×. During FREE GAMES, possible values are 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×,","",
+                        "   10×, 12×, 15×, 20×, 25×, 50×, 100×, 250×, 500× or 1000×. Multiplier values may vary on ","",
+                        "   each spin."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "BUY A FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The cost to purchase this feature is 100x the current total bet.","",
+                        "• When a Feature is purchased, 3 ##sym_9.png## symbols will appear and the ","",
+                        "   Free Games Feature will be triggered.","",
+                        "• Wins from the Buy Feature are added to any payline and ##sym_9.png## symbol wins."
+                    ]
+                }
+            }
+        ]
+    },
+    "payLines": [
+        
+    ]
+}

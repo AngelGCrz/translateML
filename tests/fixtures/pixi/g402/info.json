@@ -1,0 +1,579 @@
+{
+    "fontName": "altehaasgrotesk bold",
+    "logo": {
+        "order": 1,
+        "path": "info_logo_png",
+        "scale": 0.6,
+        "offset": "0,390"
+    },
+    "background": {
+        "path": "info1_png",
+        "offset": "0,-20"
+    },
+    "payTables": [
+        {
+            "images": [
+                {
+                    "path": "info2_png",
+                    "offset": "-388,208"
+                },
+                {
+                    "src": "sym_2.png",
+                    "scale": 0.35,
+                    "offset": "-451,206"
+                },
+                {
+                    "path": "info3_png",
+                    "offset": "0,208"
+                },
+                {
+                    "src": "sym_1.png",
+                    "scale": 0.34,
+                    "offset": "-92,210"
+                },
+                {
+                    "path": "info2_png",
+                    "offset": "388,206"
+                },
+                {
+                    "src": "sym_3.png",
+                    "scale": 0.2,
+                    "offset": "282,234"
+                },
+                {
+                    "src": "sym_4.png",
+                    "scale": 0.2,
+                    "offset": "380,168"
+                },
+                {
+                    "path": "info2_png",
+                    "offset": "-388,-8"
+                },
+                {
+                    "src": "sym_5.png",
+                    "scale": 0.2,
+                    "offset": "-490,18"
+                },
+                {
+                    "src": "sym_6.png",
+                    "scale": 0.25,
+                    "offset": "-400,-46"
+                },
+                {
+                    "path": "info3_png",
+                    "offset": "-2,-8"
+                },
+                {
+                    "src": "sym_11.png",
+                    "scale": 0.27,
+                    "offset": "-92,-20"
+                },
+                {
+                    "path": "info2_png",
+                    "offset": "388,-8"
+                },
+                {
+                    "src": "sym_7.png",
+                    "scale": 0.26,
+                    "offset": "284,24"
+                },
+                {
+                    "src": "sym_8.png",
+                    "scale": 0.26,
+                    "offset": "360,-40"
+                },
+                {
+                    "path": "info2_png",
+                    "offset": "-386,-224"
+                },
+                {
+                    "src": "sym_9.png",
+                    "scale": 0.26,
+                    "offset": "-498,-194"
+                },
+                {
+                    "src": "sym_10.png",
+                    "scale": 0.26,
+                    "offset": "-420,-258"
+                },
+                {
+                    "path": "info3_png",
+                    "offset": "-2,-222"
+                },
+                {
+                    "src": "sym_12.png",
+                    "scale": 0.3,
+                    "offset": "-118,-218"
+                },
+                {
+                    "path": "info2_png",
+                    "offset": "388,-224"
+                },
+                {
+                    "src": "sym_1b.png",
+                    "scale": 0.22,
+                    "offset": "302,-222"
+                }
+            ],
+            "titles": [
+                {
+                    "text": "FAIRY",
+                    "size": 30,
+                    "color": "rgb(3,162,255)",
+                    "offset": "94,270",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,44,206)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "490,250",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "-300,46",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "ANY POSITION",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "-92,-94",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "TREE OF\nLIGHT",
+                    "size": 34,
+                    "color": "rgb(190,204,2)",
+                    "offset": "94,54",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(14,106,31)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "490,46",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "-300,-170",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "APPEAR DURING\nTHE INSTANT WIN AND\nMAGICAL FAIRIES\nFEATURE",
+                    "size": 19,
+                    "color": "rgb(255,198,46)",
+                    "offset": "70,-220",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(161,16,1)"
+                    }
+                },
+                {
+                    "text": "ONLY APPEAR\nDURING THE\nMAGICAL FAIRIES\nFEATURE",
+                    "size": 18,
+                    "color": "rgb(255,198,46)",
+                    "offset": "460,-220",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(161,16,1)"
+                    }
+                }
+            ]
+        }
+    ],
+    "rules": {
+        "settings": {
+            "titles": {
+                "font": {
+                    "size": 55,
+                    "color": "rgb(242,206,39)",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(152,8,8)"
+                    }
+                },
+                "offset": "0,294"
+            },
+            "items": {
+                "font": {
+                    "size": 26,
+                    "color": "rgb(255,255,255)",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "symbols": {
+                    "sym_1": {
+                        "scale": 0.12,
+                        "gapX": -4
+                    },
+                    "sym_1b": {
+                        "scale": 0.12,
+                        "gapX": -4
+                    },
+                    "sym_2": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_3": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_4": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_5": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_11": {
+                        "scale": 0.12,
+                        "gapX": -4
+                    },
+                    "sym_12": {
+                        "scale": 0.14,
+                        "gapX": -8
+                    },
+                    "sym_13": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_14": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_15": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    },
+                    "sym_16": {
+                        "scale": 0.12,
+                        "gapX": -6
+                    }
+                },
+                "gap": 35,
+                "offset": "-500,200"
+            }
+        },
+        "pages": [
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Play up to 50 lines.",
+                        "",
+                        "• Highest win only on each lit line.",
+                        "",
+                        "• Coinciding wins of different symbols are added.",
+                        "",
+                        "• Line wins are multiplied by the amount bet per line.",
+                        "",
+                        "• Scattered symbol wins are multiplied by total bet.",
+                        "",
+                        "• Scattered symbol wins are added to payline wins.",
+                        "",
+                        "• All symbols pay when they appear consecutively left to right, except scattered",
+                        "",
+                        "   ##sym_11.png##which pays on any position."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• ##sym_1.png##substitutes for all symbols except scattered ##sym_11.png##.",
+                        "",
+                        "• Each ##sym_1.png##is collected and can award the Magical Fairies Feature."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "INSTANT WIN FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The Instant Win Feature is triggered when ##sym_12.png##appears 5 or more times in",
+                        "",
+                        "   a combination.",
+                        "",
+                        "• Each ##sym_12.png##will reveal a prize.",
+                        "",
+                        "• Prizes are awarded for each ##sym_12.png##appearing during the feature.",
+                        "",
+                        "• All prizes are multiplied by the triggering bet."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    },
+                    {
+                        "text": "HOLD & SPIN FEATURE",
+                        "size": 33,
+                        "align": "left",
+                        "offset": "-500,-10",
+                        "color": "rgb(165,246,255)",
+                        "stroke": {
+                            "size": 2,
+                            "color": "rgb(39,83,195)"
+                        }
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Each ##sym_1.png##is collected by The Fairies Tree.",
+                        "",
+                        "• When the Magical Fairies Feature is awarded, the Queen will reveal either the",
+                        "",
+                        "   Hold & Spin Feature or the Free Games Feature.",
+                        "",
+                        "",
+                        "",
+                        "• The Hold & Spin Feature commences with 6 ##sym_12.png##.",
+                        "",
+                        "• 3 respins are awarded and positions that don’t have ##sym_12.png##are respun.",
+                        "",
+                        "• During the Hold & Spin Feature, any ##sym_12.png##appears and the respins remaining",
+                        "",
+                        "   are reset to 3 respins."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The Red Fairy Feature and/or Green Fairy Feature can be awarded during the",
+                        "",
+                        "   Hold & Spin Feature.",
+                        "",
+                        "• The Hold & Spin Feature concludes when there are no respins left or all",
+                        "",
+                        "   positions on all feature reels are full.",
+                        "",
+                        "• At the end of Hold & Spin Feature, the Queen Fairy appears and multiplies",
+                        "",
+                        "   random ##sym_12.png##by up to 5 times, except Jackpots.",
+                        "",
+                        "• All Hold & Spin Feature prizes are multiplied by the triggering bet."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    },
+                    {
+                        "text": "RED FAIRY FEATURE",
+                        "size": 33,
+                        "align": "left",
+                        "offset": "-500,220",
+                        "color": "rgb(165,246,255)",
+                        "stroke": {
+                            "size": 2,
+                            "color": "rgb(39,83,195)"
+                        }
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "",
+                        "• The Red Fairy Feature will appear at random adding additonal sets of reels to",
+                        "",
+                        "    the game.",
+                        "",
+                        "• When the Red Fairy appears, the current game screen is replicated and play",
+                        "",
+                        "    now continues with 2 sets of feature reels.",
+                        "",
+                        "• If the Red Fairy appears again, a third set of reels appears, commencing with",
+                        "",
+                        "    6 ##sym_12.png##.",
+                        "",
+                        "• A maximum of 3 sets of feature reels can be played during any feature."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    },
+                    {
+                        "text": "GREEN FAIRY FEATURE",
+                        "size": 33,
+                        "align": "left",
+                        "offset": "-500,220",
+                        "color": "rgb(165,246,255)",
+                        "stroke": {
+                            "size": 2,
+                            "color": "rgb(39,83,195)"
+                        }
+                    },
+                    {
+                        "text": "FREE GAMES FEATURE",
+                        "size": 33,
+                        "align": "left",
+                        "offset": "-500,90",
+                        "color": "rgb(165,246,255)",
+                        "stroke": {
+                            "size": 2,
+                            "color": "rgb(39,83,195)"
+                        }
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "",
+                        "• The Green Fairy Feature will add additional prizes at random on ##sym_12.png##.",
+                        "",
+                        "",
+                        "",
+                        "• 10, 15 or 20 free games are awarded.",
+                        "",
+                        "• Each time ##sym_1b.png##appears anywhere on reel 3, it turns ##sym_1b.png##for the duration",
+                        "",
+                        "    of the free games as follows:",
+                        "",
+                        "       • If 1 ##sym_1b.png##appears on reel 3, ##sym_2.png##becomes ##sym_13.png##."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "       • If a 2nd ##sym_1b.png##appears on reel 3, all ##sym_2.png##and ##sym_3.png##",
+                        "",
+                        "           become ##sym_13.png##and ##sym_14.png##.",
+                        "",
+                        "       • If a 3rd ##sym_1b.png##appears on reel 3, all ##sym_2.png##, ##sym_3.png##and ##sym_4.png##",
+                        "",
+                        "           become ##sym_13.png##, ##sym_14.png##and ##sym_15.png##.",
+                        "",
+                        "       • If a 4th ##sym_1b.png##appears on reel 3, all ##sym_2.png##, ##sym_3.png##, ##sym_4.png##and ##sym_5.png##",
+                        "",
+                        "           become ##sym_13.png##, ##sym_14.png##, ##sym_15.png##and ##sym_16.png##.",
+                        "",
+                        "• Any symbol turned ##sym_1b.png##will stay ##sym_1b.png##for all remaining free games."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MAGICAL FAIRIES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Prizes are awarded for each ##sym_12.png##appearing during the feature.",
+                        "",
+                        "• The Free Games Feature is played at the lines and bet of the triggering",
+                        "",
+                        "   combination.",
+                        "",
+                        "• Free Games Feature wins are added to payline wins and scattered symbol wins.",
+                        "",
+                        "• All ##sym_12.png##prizes are multiplied by the triggering bet."
+                    ]
+                }
+            }
+        ]
+    },
+    "payLines": [
+        {
+            "titles": [
+                {
+                    "text": "1 - 25 LINES",
+                    "size": 55,
+                    "offset": "0,294",
+                    "color": "rgb(242,206,39)",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(152,8,8)"
+                    }
+                }
+            ],
+            "images": [
+                {
+                    "path": "info4_png",
+                    "offset": "0,-50"
+                }
+            ]
+        },
+        {
+            "titles": [
+                {
+                    "text": "26 - 50 LINES",
+                    "size": 55,
+                    "offset": "0,294",
+                    "color": "rgb(242,206,39)",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(152,8,8)"
+                    }
+                }
+            ],
+            "images": [
+                {
+                    "path": "info5_png",
+                    "offset": "0,-50"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,124 @@
+{
+    "fontName": "altehaasgrotesk bold",
+    "logo": {
+        "order": 1,
+        "path": "info_logo_png",
+        "offset": "0,375"
+    },
+    "background": {
+        "path": "info1_png",
+        "offset": "0,-45"
+    },
+    "rules": {
+        "settings": {
+            "titles": {
+                "font": {
+                    "size": 55,
+                    "color": "rgb(254,192,2)",
+                    "stroke": {
+                        "size": 5,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "offset": "0,250"
+            },
+            "items": {
+                "font": {
+                    "size": 26,
+                    "color": "rgb(255,255,255)",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "symbols": {
+                    "sym_1_png": {
+                        "scale": 0.6,
+                        "gapX": 3
+                    }
+                },
+                "gap": 30,
+                "offset": "-550,180"
+            }
+        },
+        "pages": [
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• A minimum of 4 cards must be played. ",
+                        "",
+                        "• The player must select the bet amount per card.",
+                        "",
+                        "• Card numbers can be adjusted using the 'UP' button  and will cycle back to 0 after ",
+                        "    reaching the maximum  value.","",
+                        "• Press “PLAY” to initiate the draw.",
+                        "",
+                        "• A total of 6 numbers are drawn per play. ",
+                        "",
+                        "• Possible drawn values are: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, or ##sym_1_png## .",
+                        "",
+                        "• A number on a card will be marked as a match when  it corresponds to a drawn number ",
+                        "",
+                        "   in the same  position."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The ##sym_1_png## will light up any number in its respective  position.",
+                        "",
+                        "•  Matches are only valid when they occur in the same  position."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "PAYOUTS "
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "•  “REGULAR” wins require a winning combination  starting from the first position ",
+                        "",
+                        "   in a left to right  sequence.",
+                        "",
+                        "• “ANY” wins are awarded when 3 or more numbers  match in any position on a card.",
+                        "",
+                        "•  REGULAR” and “ANY” wins can be awarded  simultaneously on the same card."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "FREE GAMES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• 5 Free Games are awarded when 3 or more numbers consecutive matches ",
+                        "     starting from the first position. ",
+                        "",
+                        "• The Free Games are played with 4 Cards",
+                        "",
+                        "• The Free Games can be retriggered. ",
+                        "",
+                        "• All winnings obtained during Free Games are added to the triggering win."
+                    ]
+                }
+            }
+        ]
+    }
+}

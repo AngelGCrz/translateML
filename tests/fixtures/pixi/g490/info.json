@@ -1,0 +1,400 @@
+{
+    "fontName": "altehaasgrotesk bold",
+    "logo": {
+        "order": 1,
+        "path": "info_logo_png",
+        "offset": "0,395"
+    },
+    "background": {
+        "path": "info1_png",
+        "offset": "0,-8"
+    },
+    "payTables": [
+        {
+            "images": [
+                {
+                    "path": "support_little_png",
+                    "offset": "-425,275"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "-425,95"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "-425,-85"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "-425,-265"
+                },
+                {
+                   "path": "support_grand_png",
+                    "offset": "0,206"
+                },
+                {
+                    "path": "support_grand_png",
+                    "offset": "0,-60"
+                },
+                {
+                    "path": "support_long_png",
+                    "offset": "0,-275"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "425,275"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "425,95"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "425,-85"
+                },
+                {
+                    "path": "support_little_png",
+                    "offset": "425,-265"
+                },
+                {
+                    "src": "sym_1.png",
+                    "scale":1,
+                    "offset": "-80,205"
+                },
+                {
+                    "src": "sym_2.png",
+                    "scale": 0.7,
+                    "offset": "-495,273"
+                },
+                {
+                    "src": "sym_3.png",
+                    "scale":0.7,
+                    "offset": "355,273"
+                },
+                {
+                    "src": "sym_4.png",
+                    "scale":0.5,
+                    "offset": "-525,120"
+                },
+                {
+                    "src": "sym_5.png",
+                    "scale":0.5,
+                    "offset": "-440,70"
+                },
+                {
+                    "src": "sym_6.png",
+                    "scale":0.7,
+                    "offset": "355,95"
+                },
+                {
+                    "src": "sym_7.png",
+                    "scale":0.5,
+                    "offset": "-530,-60"
+                },
+                {
+                    "src": "sym_8.png",
+                    "scale":0.5,
+                    "offset": "-440,-110"
+                },
+                {
+                    "src": "sym_9.png",
+                    "scale":0.53,
+                    "offset": "310,-50"
+                },
+                {
+                    "src": "sym_10.png",
+                    "scale":0.53,
+                    "offset": "390,-90"
+                },
+                {
+                    "src": "sym_11.png",
+                    "scale":0.8,
+                    "offset": "-500,-270"
+                },
+                {
+                    "src": "sym_12.png",
+                    "scale":0.8,
+                    "offset": "340,-270"
+                },
+                {
+                    "src": "sym_13.png",
+                    "scale":0.84,
+                    "offset": "-80,-60"
+                },
+                {
+                    "src": "sym_14.png",
+                    "scale": 0.2,
+                    "offset": "110,-240"
+                }
+                
+                
+            ],
+            "titles": [
+                {
+                    "text": "GYPSY",
+                    "size": 45,
+                    "color": "rgb(255,216,0)",
+                    "align": "center",
+                    "offset": "130,255",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(208,3,0)"
+                    }
+                },
+                 {
+                    "text": "BOOK",
+                    "size": 50,
+                    "color": "rgb(1,222,1)",
+                    "align": "center",
+                    "offset": "130,0",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(0,69,0)"
+                    }
+                },
+                {
+                    "tag":"SCATTER",
+                    "text": "SCATTER",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "130,30",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "WILD",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "130,285",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "-330,140",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+
+                {
+                    "text": "OF A KIND",
+                    "size": 18,
+                    "color": "rgb(255,255,255)",
+                    "offset": "520,-40",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                {
+                    "text": "6 MORE WITH    \nTRIGGERS THE MYSTIC \nCARDS FEATURE.",
+                    "size": 24,
+                    "color": "rgb(243,229,0)",
+                    "align": "center",
+                    "offset": "0,-275",
+                    "stroke": {
+                        "size": 3,
+                        "color": "rgb(200,119,0)"
+                    }
+                }
+            ]
+        }
+    ],
+    "rules": {
+        "settings": {
+			"titles": {
+                "font": {
+                    "size": 55,
+                    "color": "rgb(241,255,15)",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "offset": "0,280"
+            },
+			"items": {
+                "font": {
+                    "size": 26,
+                    "color": "rgb(255,255,255)",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                },
+                "gap": 61,
+                "offset": "-550,200",
+                "symbols": {
+                    "sym_1": {
+                        "scale": 0.35,
+                        "gapX": -3
+                    },
+                    "sym_2": {
+                        "scale": 0.2,
+                        "gapX": -14
+                    },
+                    "sym_3": {
+                        "scale": 0.35,
+                        "gapX": -14
+                    },
+                    "sym_4": {
+                        "scale": 0.35,
+                        "gapX": -14
+                    },
+                    "sym_5": {
+                        "scale": 0.35,
+                        "gapX": -14
+                    },
+                    "sym_12": {
+                        "scale": 0.2,
+                        "gapX": -2
+                    },
+                    "sym_13": {
+                        "scale": 0.35,
+                        "gapX": -2
+                    },
+                    "sym_14": {
+                        "scale": 0.25,
+                        "gapX": -6
+                    }
+                }
+            }
+        },
+        "pages": [
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• Play up to 25 lines. ",
+                        "• Highest win only on each lit line.",
+                        "• Coinciding wins on different lit lines are added.",
+                        "• Line wins are multiplied by the amount bet per line.",
+                        "• Scattered symbol wins are multiplied by total bet.",
+                        "• Scattered symbol wins are added to payline wins. ",
+                        "• Payouts are made according to the paytable."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "GAME RULES"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• All symbols pay when they appear consecutively left to right, from reel 1, except scattered", 
+                        "   ##sym_13.png## which pays on any position. ","",
+                        "• ##sym_1.png## substitutes for all symbols except scattered ##sym_13.png##.","",
+                        "• When ##sym_1.png## substitutes into a winning combination,the prize is doubled."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "FREE GAMES FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• The Free Games Feature is triggered when scattered ##sym_13.png## appears ",
+                        "   three or more times in a combination.",
+                        "• 10, 15 or 20 free games are awarded if scattered ##sym_13.png## appears 3, 4 or 5 times respectively.",
+                        "• During the Free Games Feature all prizes are tripled.",
+                        "• The Free Games Feature can be retriggered when scattered ##sym_13.png##",
+                        "   appears 2 times in a combination.",
+                        "• During the Free Games Feature 5, 10, 15 or 20 additional freegames are awarded",
+                        "   if scattered ##sym_13.png## appears 2, 3, 4 or 5 times respectively."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MYSTIC CARDS FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• 6 or more symbols with ##sym_14.png## trigger the Mystic Cards Feature.",
+                        "• All winning combinations on the triggering spin are paid.",
+                        "• All ##sym_14.png## symbols are held and 3 respins are awarded.",
+                        "• During the Mystic Cards Feature, any ##sym_14.png## appears and the respins remaining are reset",
+                        "   to 3 respins.",
+                        "• Each ##sym_14.png## awards a prize during the feature, and the prizes from the ##sym_14.png## that triggered",
+                        "   it can only be collected at the end.",
+                        "• The Mystic Cards Feature concludes when all 15 ##sym_14.png## appear or when all respins are",
+                        "   finished."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MYSTIC CARDS FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• If the ##sym_14.png## symbol appears in every position on the reels, it will award a additional prize",
+                        "   of up to 1000 times the stake of the bet that triggered the feature.",
+                        "• All prizes are multiplied by the triggering bet.",
+                        "• The Mystic Cards Feature can be awarded during the Free Games Feature.",
+                        "• If ##text_grand.png##  appears as the last symbol then you are awarded the Grand Jackpot.",
+                        "• If ##text_major.png## appears as the last symbol, then you are awarded the Major Jackpot.",
+                        "• If all ##sym_14.png## are collected and a Jackpot prize is awarded, the Jackpot prize cannot",
+                        "   be multiplied."
+                    ]
+                }
+            },
+            {
+                "titles": [
+                    {
+                        "text": "MYSTIC CARDS FEATURE"
+                    }
+                ],
+                "items": {
+                    "lines": [
+                        "• If a Jackpot prize is awarded during the Mystic Cards Feature before all ##sym_14.png## are collected,",
+                        "    the Mystic Cards Feature concludes."
+                    ]
+                }
+            }
+        ]
+    },
+    "payLines": [
+        {
+            "titles": [
+                {
+                    "text": "25 LINES",
+                    "size": 55,
+                    "color": "rgb(241,255,15)",
+                    "offset": "0,280",
+                    "stroke": {
+                        "size": 2,
+                        "color": "rgb(0,0,0)"
+                    }
+                }
+            ],
+            "images": [
+                {
+                    "path": "info_2_png",
+                    "offset": "0,-50"
+                }
+            ]
+        }
+    ]
+}

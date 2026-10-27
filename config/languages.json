@@ -1,0 +1,23 @@
+{
+    "source": "eng",
+    "languages": [
+        {"code": "eng", "name": "English", "tab": "ENG", "folder": "eng", "enabled": true},
+        {"code": "esp", "name": "Español", "tab": "ESP", "folder": "esp", "enabled": true},
+        {"code": "deu", "name": "Deutsch", "tab": "DEU", "folder": "deu", "enabled": true},
+        {"code": "ell", "name": "Greek", "tab": "ELL", "folder": "ell", "enabled": true},
+        {"code": "fra", "name": "French", "tab": "FRA", "folder": "fra", "enabled": true},
+        {"code": "ido", "name": "Indonesian", "tab": "IDO", "folder": "ido", "enabled": true},
+        {"code": "ita", "name": "Italian", "tab": "ITA", "folder": "ita", "enabled": true},
+        {"code": "jpn", "name": "Japanese", "tab": "JPN", "folder": "jpn", "enabled": true},
+        {"code": "kmb", "name": "Khmer", "tab": "KMB", "folder": "kmb", "enabled": true},
+        {"code": "krs", "name": "Korean", "tab": "KRS", "folder": "krs", "enabled": true},
+        {"code": "mly", "name": "Malay", "tab": "MLY", "folder": "mly", "enabled": true},
+        {"code": "por", "name": "Portuguese", "tab": "POR", "folder": "por", "enabled": true},
+        {"code": "rus", "name": "Russian", "tab": "RUS", "folder": "rus", "enabled": true},
+        {"code": "tha", "name": "Thai", "tab": "THA", "folder": "tha", "enabled": true},
+        {"code": "tur", "name": "Turkish", "tab": "TUR", "folder": "tur", "enabled": true},
+        {"code": "vie", "name": "Vietnamese", "tab": "VIE", "folder": "vie", "enabled": true},
+        {"code": "zh-hans", "name": "Chinese (Simplified)", "tab": "ZH-HANS", "folder": "zh-hans", "enabled": true},
+        {"code": "zh-hant", "name": "Chinese (Traditional)", "tab": "ZH-HANT", "folder": "zh-hant", "enabled": true}
+    ]
+}

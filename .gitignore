@@ -1,0 +1,9 @@
+output/
+__pycache__/
+.venv/
+.DS_Store
+# Hojas de cálculo descargadas por Data: entrada local, no forman parte del proyecto.
+*.xlsx
+*.egg-info/
+build/
+dist/

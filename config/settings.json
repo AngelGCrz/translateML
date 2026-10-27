@@ -1,0 +1,9 @@
+{
+    "profiles_dir": "profiles",
+    "languages_file": "languages.json",
+    "output_root": "../output",
+    "output_filename": "info.json",
+    "missing_translation_policy": "keep_source",
+    "key_column": "KEY",
+    "text_column": "TEXT"
+}
