@@ -193,6 +193,23 @@ aplicadas y la columna `MERGED` con las líneas unidas, reutilizables con `rebui
 | `analyze PLANTILLA` | Qué se traduciría y qué queda pendiente de revisión, sin escribir nada |
 | `verify PLANTILLA …` | Comprueba que extraer y reconstruir el inglés da el archivo idéntico |
 | `rebuild MANIFEST [--texts CSV] [--lang …]` | Reconstruye un idioma desde un CSV `KEY`,`TEXT` |
+| `clean [JUEGO] [--keep-manifest] [--yes]` | Borra resultados de `output/` (sección 5.1) |
+
+### 5.1 Limpiar `output/`
+
+```bash
+./translateml.sh clean g490          # borra output/g490
+./translateml.sh clean               # borra todo output/
+./translateml.sh clean --keep-manifest   # borra todo salvo los manifest.json
+```
+
+Pide confirmación (`--yes` para no preguntar). Solo borra dentro de `output_root`; nunca toca
+plantillas, la configuración ni el `.xlsx`, y se niega si `output_root` apunta a la carpeta del
+proyecto, a la carpeta personal o a la raíz del disco. Todo lo borrado se regenera con `generate`.
+
+`manifest.json` guarda las claves internas de cada texto. Con el formato por texto (el actual) da
+igual perderlas, porque la hoja no las usa. Con el formato con claves, usa `--keep-manifest` para
+que las claves de la hoja sigan valiendo.
 
 Los comandos `xlsx` aceptan `--sheets-config RUTA` (antes del subcomando) para usar otra
 configuración de hoja, por ejemplo una por juego: `xlsx --sheets-config g500.json build …`.

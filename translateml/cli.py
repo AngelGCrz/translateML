@@ -5,18 +5,20 @@
   python3 -m translateml rebuild  MANIFEST [--texts CSV] [--lang eng]
   python3 -m translateml verify   PLANTILLA [...]      extrae y reconstruye el inglés en memoria
   python3 -m translateml generate PLANTILLA --xlsx F   extract + xlsx build en un solo paso
+  python3 -m translateml clean [JUEGO] [--keep-manifest] [--yes]   borra resultados de output/
   python3 -m translateml xlsx {inspect,export,build} ...      Multidioma.xlsx local (ver sheets/commands.py)
 """
 from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path as FilePath
 from typing import List, Optional
 
-from .config import ConfigError, Settings, load_settings
+from .config import CONFIG_DIR, ConfigError, Settings, load_settings
 from .export import (ManifestError, extraction_report, load_manifest, manifest_data, read_merges_csv, read_texts_csv,
                      units_from_manifest, write_json, write_review_csv)
 from .extraction import Extraction, ProfileError, extract, load_profiles, select_profile
@@ -32,6 +34,7 @@ from .template import Template, TemplateError, load_template
 from .validation import validate_output
 
 _GAME_ID = re.compile(r"^g\d+$")
+_CLEAN_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -70,6 +73,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     verify_cmd.add_argument("templates", nargs="+")
     verify_cmd.add_argument("--profile")
 
+    clean_cmd = commands.add_parser("clean", help="Borra los resultados de output/ (todos o los de un juego).")
+    clean_cmd.add_argument("game", nargs="?", help="Juego a limpiar (p. ej. g490). Sin él, todo output/.")
+    clean_cmd.add_argument("--keep-manifest", action="store_true",
+                           help="Conserva manifest.json de cada juego (y con él las claves de los textos).")
+    clean_cmd.add_argument("--yes", action="store_true", help="No pide confirmación.")
+
     sheets_commands.register(commands)
 
     for stream in (sys.stdout, sys.stderr):
@@ -80,7 +89,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         settings = load_settings()
         handlers = {"analyze": cmd_analyze, "extract": cmd_extract, "rebuild": cmd_rebuild, "verify": cmd_verify,
-                    "xlsx": sheets_commands.run, "generate": cmd_generate}
+                    "xlsx": sheets_commands.run, "generate": cmd_generate, "clean": cmd_clean}
         return handlers[args.command](args, settings)
     except (ConfigError, TemplateError, ProfileError, ManifestError, SheetsError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -136,6 +145,46 @@ def cmd_generate(args, settings: Settings) -> int:
     out = extract_to(args.template, settings, args.profile, args.name, args.out, fresh_keys=False)
     print("")
     return sheets_commands.build(out / "manifest.json", settings, config, args.lang)
+
+
+def cmd_clean(args, settings: Settings) -> int:
+    """Borra resultados generados. Solo actúa dentro de output_root; nunca toca plantillas ni el .xlsx."""
+    root = settings.output_root.resolve()
+    project = CONFIG_DIR.parent.resolve()
+    if root in (FilePath.home().resolve(), FilePath(root.anchor)) or root == project or root in project.parents:
+        raise ConfigError(f"output_root ({root}) no es una carpeta de resultados segura para borrar.")
+    if args.game and (not _CLEAN_NAME.match(args.game) or args.game in (".", "..")):
+        raise ConfigError(f"Nombre de juego no válido: {args.game!r}")
+    target = root / args.game if args.game else root
+    if not target.is_dir():
+        print(f"No hay nada que limpiar en {target}.")
+        return 0
+    if not args.keep_manifest:
+        doomed = [target] if args.game else sorted(target.iterdir())
+    else:
+        games = [target] if args.game else sorted(p for p in target.iterdir() if p.is_dir())
+        doomed = [p for game in games for p in sorted(game.iterdir()) if p.name != "manifest.json"]
+        if not args.game:
+            doomed += sorted(p for p in target.iterdir() if not p.is_dir())
+    if not doomed:
+        print(f"No hay nada que limpiar en {target}.")
+        return 0
+    files = sum(1 if p.is_file() else sum(1 for f in p.rglob("*") if f.is_file()) for p in doomed)
+    kept = " (se conservan los manifest.json)" if args.keep_manifest else ""
+    print(f"Se borrarán {len(doomed)} elementos ({files} archivos) de {target}{kept}.")
+    if not args.yes:
+        if not sys.stdin.isatty():
+            raise ConfigError("Confirma con --yes para borrar sin preguntar.")
+        if input("¿Continuar? [s/N] ").strip().lower() not in ("s", "si", "sí", "y", "yes"):
+            print("Cancelado; no se borró nada.")
+            return 1
+    for path in doomed:
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    print("Listo.")
+    return 0
 
 
 def extract_to(template_path: str, settings: Settings, profile_name: Optional[str], name: Optional[str],
