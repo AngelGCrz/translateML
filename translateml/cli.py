@@ -17,7 +17,7 @@ from pathlib import Path as FilePath
 from typing import List, Optional
 
 from .config import ConfigError, Settings, load_settings
-from .export import (ManifestError, extraction_report, load_manifest, manifest_data, read_texts_csv,
+from .export import (ManifestError, extraction_report, load_manifest, manifest_data, read_merges_csv, read_texts_csv,
                      units_from_manifest, write_json, write_review_csv)
 from .extraction import Extraction, ProfileError, extract, load_profiles, select_profile
 from .jsonpath import format_path
@@ -177,8 +177,12 @@ def cmd_rebuild(args, settings: Settings) -> int:
             raise ManifestError(f"Claves que no existen en el manifest: {', '.join(unknown[:10])}")
     else:
         texts = {u.key: u.text for u in units}
+    merges = read_merges_csv(FilePath(args.texts), settings.key_column) if args.texts else {}
+    unknown = sorted({k for first, rest in merges.items() for k in [first] + rest} - {u.key for u in units})
+    if unknown:
+        raise ManifestError(f"Claves de MERGED que no existen en el manifest: {', '.join(unknown[:10])}")
     out = FilePath(args.out) if args.out else manifest_file.parent
-    return build_language(template, profile, units, texts, language, settings, out)[0]
+    return build_language(template, profile, units, texts, language, settings, out, merges=merges)[0]
 
 
 def cmd_verify(args, settings: Settings) -> int:

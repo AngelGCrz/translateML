@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 
 from .config import ConfigError, Language, Settings, load_languages
 from .export import ManifestError, load_manifest, units_from_manifest, write_json
+from .jsonpath import format_path
 from .extraction import Profile, TextUnit, load_profiles, select_profile
 from .rebuild import rebuild
 from .template import Template, load_template
@@ -31,17 +32,19 @@ def enabled_language(settings: Settings, code: Optional[str]) -> Language:
 
 
 def build_language(template: Template, profile: Profile, units: List[TextUnit], texts: Dict[str, str],
-                   language: Language, settings: Settings, out: FilePath, quiet: bool = False) -> Tuple[int, Dict]:
+                   language: Language, settings: Settings, out: FilePath, quiet: bool = False,
+                   merges: Optional[Dict[str, List[str]]] = None) -> Tuple[int, Dict]:
     """Reconstruye, valida y escribe <out>/<carpeta del idioma>/info.json con su informe.
 
     Devuelve (código de salida, informe). Con `quiet` no se lista cada incidencia por pantalla.
     """
-    result = rebuild(template, units, texts, profile)
-    errors = validate_output(template, result.text, result.changes)
+    result = rebuild(template, units, texts, profile, merges)
+    errors = validate_output(template, result.text, result.changes, result.removals)
     target = out / language.folder / settings.output_filename
     report = {
         "language": language.code, "output": str(target), "changed_texts": len(result.changes),
         "kept_source": len(result.missing), "validation_errors": errors,
+        "merged_lines": [format_path(p) for p in result.removals],
         "issues": [vars(i) for i in result.issues], "written": False,
     }
     blocked = settings.missing_translation_policy == "error" and result.missing

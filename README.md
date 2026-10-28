@@ -6,6 +6,8 @@ y de la hoja `Multidioma.xlsx` donde Data mantiene las traducciones.
 - Solo cambia los textos traducibles. Estructura, orden, números, colores, offsets, imágenes y
   formato del archivo quedan exactamente como en la plantilla.
 - No reparte textos entre páginas ni crea elementos: la distribución visual es la de la plantilla.
+  La única excepción son las frases que la plantilla corta en varias líneas: la traducción completa
+  va en la primera línea y las de continuación se quitan (sección 3).
 - Funciona sin Internet ni credenciales: la hoja se descarga a mano desde Google Sheets.
 - Admite 18 idiomas, configurables (`config/languages.json`).
 
@@ -86,6 +88,8 @@ se describe en `config/sheets.json`. La configuración actual corresponde a la h
    - Un texto repetido en la plantilla (`GAME RULES` en dos páginas) recibe la misma traducción en
      todas sus ubicaciones.
    - Una fila que no coincide exactamente **no se usa** y se informa. Nunca se busca un parecido.
+   - **Frases que en la plantilla ocupan varias líneas:** Data las escribe enteras en una celda,
+     como cualquier otra. El programa sabe a qué líneas corresponden (ver abajo).
 2. **Cada traducción con su fila de ENG, por la referencia de su fórmula** (`ENG!C7` → fila 7),
    también en rangos (`ENG!C2:C`) y en la forma en que Google exporta sus funciones
    (`__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(ENG!C7,…)")`).
@@ -96,10 +100,40 @@ Se leen los **valores guardados** en el `.xlsx`, nunca el texto de las fórmulas
 fórmulas: si una pestaña no tiene ningún valor guardado, el idioma no se genera y se pide volver a
 descargar el archivo.
 
+### Frases de varias líneas
+
+En la plantilla algunas frases están cortadas en dos líneas para que quepan:
+
+```text
+"• All symbols pay when they appear consecutively left to right, from reel 1, except scattered",
+"   ##sym_13.png## which pays on any position. ",
+```
+
+En la hoja, Data escribe la frase completa en **una celda**, sin preocuparse de los cortes:
+`All symbols pay when they appear consecutively left to right, from reel 1, except scattered ##sym_13.png## which pays on any position.`
+El programa reconoce que esa frase son esas líneas (las une con un espacio y compara exactamente) y:
+
+- **Por defecto**, pone la traducción completa en la primera línea, con su viñeta, y **quita las
+  líneas de continuación** de la lista:
+
+  ```text
+  "• Todos los símbolos pagan … excepto el símbolo disperso ##sym_13.png## que paga en cualquier posición. ",
+  ```
+
+- Si la traducción tiene **los mismos saltos de línea** que la plantilla (opcional, por si alguien
+  quiere decidir dónde se corta), cada trozo va a su línea y no se quita ninguna.
+
+Detalles:
+- La validación comprueba que solo desaparecen esas líneas y que todo lo demás queda idéntico.
+  El informe las lista en `merged_lines`.
+- Los marcadores se comprueban sobre la frase completa. Si la traducción pierde uno, toda la frase
+  se queda en inglés y no se quita nada.
+- Una línea larga puede no caber en la página: revísalo en el juego. El programa nunca corta por longitud.
+- Si una línea de esa frase también tiene su propia fila en la hoja, se usa esa fila y la frase no se
+  une (`sentence_overlaps_rows`), para que una línea nunca reciba dos traducciones distintas.
+
 ### Qué se conserva en inglés (y se informa)
 
-- **Frases que en la plantilla ocupan varias líneas** (`sentence_spans_lines`). Repartir la traducción
-  cambiaría dónde se corta cada línea, así que por ahora esas líneas se quedan en inglés.
 - **Inglés distinto** entre hoja y plantilla (`not_in_template`), incluidas erratas o marcadores con
   otro nombre (`##jackpot_grand.png##` frente a `##text_grand.png##`). Corrige la hoja o la plantilla.
 - **Textos de la plantilla que no están en la hoja** (lista `missing` del informe).
@@ -132,7 +166,7 @@ cadenas pendientes de revisión en la plantilla (`pending_review`) y problemas d
 | `duplicate_key`, `invalid_key`, `ambiguous` | **Error**: el idioma no se genera | Mismo inglés con traducciones distintas o claves repetidas: corregir la hoja |
 | `no_cached_value` | **Error** | Volver a descargar el `.xlsx` cuando las fórmulas estén calculadas |
 | pestaña o cabecera ausente o repetida | **Error** | Revisar la hoja o `config/languages.json` / `config/sheets.json` |
-| `sentence_spans_lines` | Aviso | Frase de varias líneas en la plantilla: queda en inglés |
+| `sentence_overlaps_rows` | Aviso | Frase de varias líneas cuya primera línea también tiene fila propia: se usa esa fila |
 | `not_in_template` | Aviso | Fila de ENG sin texto idéntico en la plantilla |
 | `eng_out_of_sync`, `not_in_sheet` | Aviso | Texto de la plantilla sin fila (o con otro inglés) en la hoja |
 | `token_mismatch` | Aviso | La traducción perdió o alteró un marcador: queda en inglés |
@@ -144,7 +178,7 @@ cadenas pendientes de revisión en la plantilla (`pending_review`) y problemas d
 Otros archivos de `output/<juego>/`: `manifest.json` (claves internas → rutas del JSON; no se edita),
 `extracted.csv` (los textos extraídos), `extraction-report.json` (reglas y auditoría),
 `key-changes.json` (cambios de claves entre extracciones) y `sheets/<idioma>.csv` (las traducciones
-aplicadas, reutilizables con `rebuild --texts`).
+aplicadas y la columna `MERGED` con las líneas unidas, reutilizables con `rebuild --texts`).
 
 ## 5. Comandos
 
@@ -234,7 +268,7 @@ Eso se revisa en el juego (por ejemplo, el jemer usa espacios invisibles `​`).
 | `no tiene la pestaña 'ITA' … ¿Es 'Ita'?` | Corrige `tab` en `languages.json` o el nombre de la pestaña |
 | `no tiene la columna 'TEXT'` | Revisa `header_row`/`text_column` en `sheets.json` (`xlsx inspect` muestra la forma real) |
 | `ninguna de las N fórmulas … tiene valor guardado` | Descarga de nuevo el `.xlsx` desde Google Sheets cuando haya terminado de calcular |
-| Muchas `sentence_spans_lines` | Esperado: frases de varias líneas en la plantilla quedan en inglés |
+| Una frase larga se sale de la página en el juego | Es una frase unida en una línea; acórtala en la hoja o ajusta la plantilla |
 | `not_in_template` en una fila que parece igual | Hay una diferencia mínima (espacio junto a `##…##`, coma, errata): compara con `extracted.csv` |
 
 ## 10. Para desarrolladores
@@ -279,6 +313,6 @@ usa la carpeta `config/` del proyecto.
 
 ### Limitaciones conocidas
 
-- Las frases que ocupan varias líneas en la plantilla se quedan en inglés (decisión actual).
+- Las frases que la plantilla corta en varias líneas se traducen en una sola línea; si no cabe, hay que ajustarlo en el juego.
 - Sin interfaz gráfica: el flujo completo se hace con un comando.
 - Los scripts de Windows (`setup.cmd`, `translateml.cmd`) no se han probado todavía en un equipo Windows.

@@ -151,7 +151,7 @@ class XlsxFlowTest(unittest.TestCase):
         self.assertEqual(report["languages"]["esp"]["applied"], 9)
         self.assertEqual(report["languages"]["deu"]["applied"], 1)
         self.assertEqual(len(report["languages"]["deu"]["missing"]), 8)
-        self.assertEqual(read_csv(self.out / "sheets" / "esp.csv")[1], ["T0001", "REGLAS DEL JUEGO"])
+        self.assertEqual(read_csv(self.out / "sheets" / "esp.csv")[1], ["T0001", "REGLAS DEL JUEGO", ""])
 
     def test_lost_marker_keeps_english_and_is_reported(self):
         self.workbook(esp=dict(ES, T0003="## sym_11.png ## paga en cualquier posición."))
@@ -322,10 +322,69 @@ class XlsxTextModeFlowTest(TextModeCase):
         self.assertEqual(report["status"], "warnings")
         self.assertEqual(report["association"], "text")
         kinds = sorted(p["kind"] for p in report["eng_problems"])
-        self.assertEqual(kinds, ["not_in_template", "not_in_template", "sentence_spans_lines"])
+        # La frase "Play up to 50 lines. ##sym_11…" no se une: "Play up to 50 lines." ya tiene fila propia.
+        self.assertEqual(kinds, ["not_in_template", "not_in_template", "sentence_overlaps_rows"])
         self.assertEqual(report["languages"]["esp"]["applied"], 7)
         self.assertEqual(sorted(report["languages"]["esp"]["missing"]), ["T0003", "T0006"])
         self.assertEqual([p["kind"] for p in report["languages"]["esp"]["problems"]], ["unlinked"])
+
+    def lines(self, code="esp"):
+        return json.loads((self.out / code / "info.json").read_text(encoding="utf-8"))["rules"]["pages"][0]["items"]["lines"]
+
+    def test_sentence_over_several_lines_is_split_or_merged(self):
+        sentence = "Play up to 50 lines. ##sym_11.png##pays anywhere."
+        self.ENG = ["GAME RULES", sentence, "Jackpot text"]
+        self.ES = {"GAME RULES": "REGLAS", "Jackpot text": "Texto del jackpot",
+                   sentence: "Juega hasta 50 líneas.\n##sym_11.png##paga en cualquier posición."}
+        self.write()
+        code, output = self.build("--lang", "esp")
+        self.assertEqual(code, 0, output)
+        # Mismos saltos de línea que la plantilla: cada trozo en su línea.
+        self.assertEqual(self.lines()[:4], ["• Juega hasta 50 líneas. ", "", "   ##sym_11.png##paga en cualquier posición.",
+                                            "{fixedJackpot}• Texto del jackpot"])
+
+        self.ES[sentence] = "Juega hasta 50 líneas. ##sym_11.png##paga en cualquier posición."
+        self.write()
+        code, output = self.build("--lang", "esp")
+        self.assertEqual(code, 0, output)
+        self.assertNotIn("line_count_mismatch", output)
+        # Sin saltos: la frase completa en la primera línea y la continuación eliminada.
+        self.assertEqual(self.lines(), ["• Juega hasta 50 líneas. ##sym_11.png##paga en cualquier posición.", "",
+                                        "{fixedJackpot}• Texto del jackpot", "    6 ##sym_12.png##."])
+        report = json.loads((self.out / "xlsx-build-report.json").read_text(encoding="utf-8"))
+        esp = report["languages"]["esp"]
+        self.assertNotIn("T0002", esp["missing"])
+        self.assertNotIn("T0003", esp["missing"])
+        self.assertEqual(esp["merged_lines"], ["rules.pages[0].items.lines[2]"])
+        self.assertEqual(esp["marker_issues"], [])
+        eng = json.loads(self.template.read_text(encoding="utf-8"))
+        esp_data = json.loads((self.out / "esp" / "info.json").read_text(encoding="utf-8"))
+        del eng["rules"]["pages"][0]["items"]["lines"][2]
+        self.assertEqual(eng["rules"]["pages"][1], esp_data["rules"]["pages"][1])
+        self.assertEqual(eng["rules"]["settings"], esp_data["rules"]["settings"])
+
+        # El CSV del idioma conserva la unión: rebuild --texts reproduce el mismo archivo.
+        merged = {row[0]: row[2] for row in read_csv(self.out / "sheets" / "esp.csv")[1:]}
+        self.assertEqual(merged["T0002"], "T0003")
+        built = (self.out / "esp" / "info.json").read_bytes()
+        again = Path(self.tmp.name) / "again"
+        code, output = run("rebuild", str(self.out / "manifest.json"), "--texts", str(self.out / "sheets" / "esp.csv"),
+                           "--lang", "esp", "--out", str(again))
+        self.assertEqual(code, 0, output)
+        self.assertEqual((again / "esp" / "info.json").read_bytes(), built)
+
+    def test_merged_sentence_that_loses_a_marker_stays_in_english(self):
+        sentence = "Play up to 50 lines. ##sym_11.png##pays anywhere."
+        self.ENG = ["PAYTABLE", sentence]  # la fila 1 es un rótulo sin fórmula, como en la hoja real
+        self.ES = {sentence: "Juega hasta 50 líneas, paga en cualquier posición."}
+        self.write()
+        code, output = self.build("--lang", "esp")
+        self.assertEqual(code, 0, output)
+        self.assertEqual(self.lines()[:3], ["• Play up to 50 lines. ", "", "   ##sym_11.png##pays anywhere."])
+        esp = json.loads((self.out / "xlsx-build-report.json").read_text(encoding="utf-8"))["languages"]["esp"]
+        self.assertEqual([(i["key"], i["kind"]) for i in esp["marker_issues"]], [("T0002", "token_mismatch")])
+        self.assertEqual(esp["merged_lines"], [])
+        self.assertIn("T0003", esp["missing"])
 
     def test_same_english_twice_needs_the_same_translation(self):
         rows = ["GAME RULES", "OF A KIND", "OF A KIND"]

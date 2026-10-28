@@ -220,12 +220,44 @@ class TextAssociationTest(unittest.TestCase):
         self.assertEqual(eng.keys_by_row, {2: ["T0002"], 3: ["T0006"]})
         self.assertEqual([(p.kind, p.cell) for p in eng.problems], [("not_in_template", "ENG!C1"), ("not_in_template", "ENG!C4")])
 
-    def test_sentence_over_several_lines_is_reported_not_split(self):
-        _, eng = self.eng(["Play up to 50 lines. ##sym_11.png##pays anywhere.", "Play up to 50 lines!"])
-        kinds = [(p.kind, p.key, p.blocking) for p in eng.problems]
-        self.assertEqual(kinds, [("not_in_template", None, False), ("sentence_spans_lines", "T0002,T0003", False),
-                                 ("not_in_template", None, False)])
-        self.assertEqual(eng.rows, {})
+    def test_sentence_in_one_cell_maps_to_its_template_lines(self):
+        for text in ("Play up to 50 lines. ##sym_11.png##pays anywhere.",
+                     "Play up to 50 lines.\n##sym_11.png##pays anywhere.",
+                     "  Play up to 50 lines. \r\n  ##sym_11.png##pays anywhere.\n"):
+            with self.subTest(text=text):
+                _, eng = self.eng([text])
+                self.assertEqual(eng.line_groups, {2: [["T0002", "T0003"]]})
+                self.assertEqual(eng.texts, {"T0002": "Play up to 50 lines.", "T0003": "##sym_11.png##pays anywhere."})
+                self.assertEqual([p.kind for p in eng.problems], ["not_in_template"])  # solo el rótulo SECTION
+        _, eng = self.eng(["Play up to 50 lines.\nJackpot text"])  # no son líneas seguidas
+        self.assertEqual(eng.line_groups, {})
+        self.assertEqual([p.kind for p in eng.problems][-1], "not_in_template")
+
+    def test_a_line_with_its_own_row_is_not_merged(self):
+        _, eng = self.eng(["Play up to 50 lines. ##sym_11.png##pays anywhere.", "Play up to 50 lines."])
+        self.assertEqual(eng.line_groups, {})
+        self.assertEqual(eng.keys_by_row, {3: ["T0002"]})
+        self.assertEqual([(p.kind, p.cell) for p in eng.problems],
+                         [("not_in_template", "ENG!C1"), ("sentence_overlaps_rows", "ENG!C2")])
+
+    def test_translation_is_split_or_merged(self):
+        rows, eng = self.eng(["Play up to 50 lines. ##sym_11.png##pays anywhere."])
+        cases = {
+            "Juega hasta 50 líneas.\n##sym_11.png##paga en cualquier posición.":
+                ({"T0002": "Juega hasta 50 líneas.", "T0003": "##sym_11.png##paga en cualquier posición."}, {}),
+            "Juega hasta 50 líneas. ##sym_11.png##paga en cualquier posición.":
+                ({"T0002": "Juega hasta 50 líneas. ##sym_11.png##paga en cualquier posición."}, {"T0002": ["T0003"]}),
+            "Juega hasta 50 líneas.\n##sym_11.png##paga\nen cualquier posición.":
+                ({"T0002": "Juega hasta 50 líneas. ##sym_11.png##paga en cualquier posición."}, {"T0002": ["T0003"]}),
+        }
+        for value, (texts, merges) in cases.items():
+            with self.subTest(value=value):
+                esp = [["", "", "SECCIÓN"], ["", "1", F("=ENG!C2", value)]]
+                association = associate(load_table(FakeSheets({"ENG": rows, "ESP": esp}), "ESP", 0), eng, GAME, "KEY",
+                                        "TEXT", False, "C")
+                self.assertEqual((association.texts, association.merges), (texts, merges))
+                usable, problems = check_against_manifest(UNITS, eng, association)
+                self.assertNotIn("T0003", {p.key for p in problems if p.kind == "missing"})
 
     def test_translations_follow_formulas_and_conflicts_are_ambiguous(self):
         rows, eng = self.eng(["GAME RULES", "Nested line", "GAME RULES"])

@@ -1,9 +1,10 @@
 """Validación de los JSON generados frente a la plantilla original."""
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 
 from .jsonpath import Path, format_path
+from .rebuild import apply_changes
 from .template import Template, TemplateError, parse_json
 
 
@@ -30,13 +31,17 @@ def compare_structure(original: Any, generated: Any, allowed: Dict[Path, str], p
     return [] if original == generated else [f"{format_path(path)}: valor modificado {original!r} -> {generated!r}"]
 
 
-def validate_output(template: Template, text: str, changes: Dict[Path, str]) -> List[str]:
-    """Comprueba que `text` es JSON válido y que solo cambian las rutas de `changes`."""
+def validate_output(template: Template, text: str, changes: Dict[Path, str], removals: Sequence[Path] = ()) -> List[str]:
+    """Comprueba que `text` es JSON válido y que solo cambian las rutas de `changes` y desaparecen
+    las líneas de `removals` (continuaciones de frases unidas); todo lo demás debe ser idéntico."""
     try:
         generated = parse_json(text, "JSON generado")
     except TemplateError as exc:
         return [str(exc)]
-    errors = compare_structure(template.data, generated, changes)
-    if not changes and text != template.text:
+    if removals:
+        errors = compare_structure(apply_changes(template.data, changes, list(removals)), generated, {})
+    else:
+        errors = compare_structure(template.data, generated, changes)
+    if not changes and not removals and text != template.text:
         errors.append("Sin cambios de texto, pero el archivo no es idéntico a la plantilla.")
     return errors

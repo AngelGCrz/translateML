@@ -46,6 +46,42 @@ class TemplateTest(unittest.TestCase):
         self.assertTrue(rendered.endswith(template.text[end:]))
         self.assertEqual(get_value(json.loads(rendered), path), 'Nuevo "texto"\n')
 
+    def test_removing_list_elements_keeps_the_rest_byte_for_byte(self):
+        from translateml.rebuild import apply_changes
+        with tempfile.TemporaryDirectory() as tmp:
+            file = Path(tmp) / "info.json"
+            file.write_text('{\n  "lines": [ "a",\n    "b" ,"c",\n "d" ],\n  "other": [1, {"x": "y"}],\n  "one": ["z"]\n}\n',
+                            encoding="utf-8")
+            template = load_template(file)
+            cases = [
+                ([("lines", 1)], '{\n  "lines": [ "a",\n    "c",\n "d" ],'),
+                ([("lines", 3)], '{\n  "lines": [ "a",\n    "b" ,"c" ],'),
+                ([("lines", 2), ("lines", 3)], '{\n  "lines": [ "a",\n    "b" ],'),
+                ([("one", 0)], '"one": []'),
+                ([("other", 1), ("lines", 0)], '"other": [1]'),
+            ]
+            for removals, fragment in cases:
+                with self.subTest(removals=removals):
+                    rendered = template.render({}, removals)
+                    self.assertIn(fragment, rendered)
+                    self.assertEqual(json.loads(rendered), apply_changes(template.data, {}, removals))
+                    self.assertTrue(rendered.endswith("\n}\n"))
+            with self.assertRaises(TemplateError):
+                template.render({}, [("other", 1, "x")])
+
+    def test_real_template_line_removal_and_replacement(self):
+        from translateml.rebuild import apply_changes
+        from translateml.validation import validate_output
+        template = load_template(REAL_TEMPLATES[2])  # g490
+        removals = [("rules", "pages", 1, "items", "lines", 1)]
+        changes = {("rules", "pages", 1, "items", "lines", 0): "• Frase completa ##sym_13.png## en una línea."}
+        rendered = template.render(changes, removals)
+        self.assertEqual(json.loads(rendered), apply_changes(template.data, changes, removals))
+        self.assertEqual(validate_output(template, rendered, changes, removals), [])
+        self.assertTrue(validate_output(template, rendered, changes, []))  # sin declarar la eliminación: error
+        before, after = template.text.split('"   ##sym_13.png## which pays on any position. "')
+        self.assertTrue(rendered.endswith(after[after.index('""'):]))
+
     def test_rejects_duplicate_keys_and_invalid_json(self):
         with tempfile.TemporaryDirectory() as tmp:
             file = Path(tmp) / "info.json"

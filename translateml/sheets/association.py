@@ -4,8 +4,11 @@ Cada fila de ENG se relaciona con las claves de la plantilla de una de dos forma
 (`association` en config/sheets.json):
 - "key": una columna de clave generada por el programa ("g490:T0001", ver `xlsx export`);
 - "text": el texto inglés exacto de la fila. Un texto repetido en la plantilla ("GAME RULES")
-  recibe la misma traducción en todas sus ubicaciones. Las filas sin coincidencia exacta se
-  informan (incluidas las frases que en la plantilla ocupan varias líneas) y no se usan.
+  recibe la misma traducción en todas sus ubicaciones. Una frase que en la plantilla ocupa varias
+  líneas seguidas se asocia a todas ellas (en la celda puede ir en una sola línea o con saltos de
+  línea en los mismos puntos). Su traducción se reparte por sus propios saltos de línea si tiene los
+  mismos; si no, la frase completa va en la primera línea y las continuaciones se eliminan. Nunca se
+  corta por longitud. Las filas sin coincidencia exacta se informan y no se usan.
 Las pestañas de traducción se asocian con las filas de ENG, por orden de preferencia:
   1. por su propia columna de clave, si existe;
   2. por la referencia de su fórmula a ENG (=GOOGLETRANSLATE(ENG!B5; ...) -> fila 5 de ENG),
@@ -56,6 +59,8 @@ class EngIndex:
     rows: Dict[str, int] = field(default_factory=dict)
     texts: Dict[str, str] = field(default_factory=dict)
     keys_by_row: Dict[int, List[str]] = field(default_factory=dict)
+    # Frases de varias líneas: fila -> grupos de claves (una por línea de la plantilla, en orden).
+    line_groups: Dict[int, List[List[str]]] = field(default_factory=dict)
     mode: str = "key"
     unkeyed_rows: List[int] = field(default_factory=list)  # filas con texto y sin clave
     other_games: int = 0
@@ -104,44 +109,77 @@ def index_eng_by_text(table: Table, units: List[TextUnit], text_header: str, tex
 
     Se ignoran los espacios al principio y al final de la celda: en la plantilla forman parte de la
     sangría o del sufijo protegido, que el programa restaura, no del texto que traduce Data.
+    Primero se asignan las filas que coinciden con una línea; después, las frases de varias líneas
+    cuyas líneas no tengan ya fila propia (una línea nunca recibe dos traducciones distintas).
     """
     index = EngIndex(table, None, text_column(table, text_header, text_letter), mode="text")
     by_text: Dict[str, List[TextUnit]] = {}
     for unit in units:
         by_text.setdefault(unit.text, []).append(unit)
+    pending = []
     for row in table.data_rows():
         text = table.value(row, index.text_col).strip()
         if not text:
             continue
-        where = cell_name(table, row, index.text_col)
         matches = by_text.get(text)
-        if matches:
-            index.keys_by_row[row] = [u.key for u in matches]
-            for unit in matches:
-                index.rows.setdefault(unit.key, row)
-                index.texts[unit.key] = text
+        if not matches:
+            pending.append((row, text))
             continue
-        spanned = _spanning_units(units, text)
-        if spanned:
-            paths = ", ".join(format_path(u.path) for u in spanned)
+        index.keys_by_row[row] = [u.key for u in matches]
+        for unit in matches:
+            index.rows.setdefault(unit.key, row)
+            index.texts[unit.key] = text
+    exact = set(index.rows)
+
+    for row, text in pending:
+        where = cell_name(table, row, index.text_col)
+        lines = split_lines(text)
+        if len(lines) > 1:
+            groups = [g for g in _consecutive_groups(units, len(lines)) if [u.text for u in g] == lines]
+        else:
+            groups = _spanning_groups(units, text)
+        free = [g for g in groups if not any(u.key in exact for u in g)]
+        if free:
+            index.line_groups[row] = [[u.key for u in g] for g in free]
+            for group in free:
+                for unit in group:
+                    index.rows.setdefault(unit.key, row)
+                    index.texts[unit.key] = unit.text
+        elif groups:
+            taken = sorted({u.key for g in groups for u in g if u.key in exact})
             index.problems.append(Problem(
-                "sentence_spans_lines", f"la frase ocupa {len(spanned)} líneas en la plantilla ({paths}); se conserva "
-                "el inglés para no cambiar dónde se corta cada línea", ",".join(u.key for u in spanned), where, False))
+                "sentence_overlaps_rows", f"la frase ocupa varias líneas de la plantilla, pero {', '.join(taken)} ya "
+                "tiene su propia fila en la hoja; se usa esa fila y esta no", cell=where, blocking=False))
+        elif len(lines) > 1:
+            index.problems.append(Problem(
+                "not_in_template", f"las {len(lines)} líneas de la celda no coinciden con líneas consecutivas de la "
+                f"plantilla: {' ⏎ '.join(lines)!r}", cell=where, blocking=False))
         else:
             index.problems.append(Problem("not_in_template", f"ningún texto de la plantilla es exactamente {text!r}",
                                           cell=where, blocking=False))
+    index.problems.sort(key=lambda p: (len(p.cell or ""), p.cell or ""))
     return index
 
 
-def _spanning_units(units: List[TextUnit], text: str) -> List[TextUnit]:
-    """Líneas consecutivas de una misma lista cuyo texto unido con un espacio es `text`."""
-    for start in range(len(units)):
-        for size in range(2, MAX_SENTENCE_LINES + 1):
-            group = units[start:start + size]
-            if len(group) < size or len({u.path[:-1] for u in group}) > 1:
-                break
-            if " ".join(u.text for u in group) == text:
-                return group
+def split_lines(text: str) -> List[str]:
+    """Trozos de una celda separados por saltos de línea, sin espacios exteriores ni trozos vacíos."""
+    return [part.strip() for part in re.split(r"\r?\n", text) if part.strip()]
+
+
+def _consecutive_groups(units: List[TextUnit], size: int):
+    """Grupos de `size` líneas seguidas de una misma lista de la plantilla (p. ej. items.lines)."""
+    for start in range(len(units) - size + 1):
+        group = units[start:start + size]
+        if len({u.path[:-1] for u in group}) == 1:
+            yield group
+
+
+def _spanning_groups(units: List[TextUnit], text: str) -> List[List[TextUnit]]:
+    """Grupos de líneas consecutivas de una misma lista cuyo texto unido con un espacio es `text`."""
+    for size in range(2, MAX_SENTENCE_LINES + 1):
+        groups = [g for g in _consecutive_groups(units, size) if " ".join(u.text for u in g) == text]
+        if groups:
+            return groups
     return []
 
 
@@ -152,6 +190,8 @@ class Association:
     cells: Dict[str, str] = field(default_factory=dict)
     methods: Counter = field(default_factory=Counter)
     problems: List[Problem] = field(default_factory=list)
+    # Frases unidas: clave de la primera línea -> claves de las líneas de continuación que se eliminan.
+    merges: Dict[str, List[str]] = field(default_factory=dict)
 
 
 def associate(table: Table, eng: EngIndex, game: str, key_header: str, text_header: str,
@@ -182,6 +222,11 @@ def associate(table: Table, eng: EngIndex, game: str, key_header: str, text_head
             if eng_row is None:
                 if value.strip():
                     result.problems.append(Problem("unlinked", detail, cell=where))
+                continue
+            groups = eng.line_groups.get(eng_row)
+            if groups:
+                _split_translation(table, row, text_col, value, groups, found, result)
+                result.methods[method] += 1
                 continue
             keys = eng.keys_by_row.get(eng_row)
             if not keys:
@@ -222,6 +267,28 @@ def associate(table: Table, eng: EngIndex, game: str, key_header: str, text_head
     return result
 
 
+def _split_translation(table: Table, row: int, col: int, value: str, groups: List[List[str]],
+                       found: Dict[str, List[Tuple[int, str]]], result: "Association") -> None:
+    """Reparte la traducción de una frase de varias líneas.
+
+    Con los mismos saltos de línea que la plantilla, cada trozo va a su línea. Si no, la frase completa
+    va en la primera línea y las continuaciones se eliminan (`merges`); nunca se corta por longitud.
+    """
+    keys = [key for group in groups for key in group]
+    if (row, col) in table.uncached or is_error_value(value) or not value.strip():
+        for key in keys:  # vacía o con error: se informa por clave en la comprobación general
+            found.setdefault(key, []).append((row, value))
+        return
+    parts = split_lines(value)
+    for group in groups:
+        if len(parts) == len(group):
+            for key, part in zip(group, parts):
+                found.setdefault(key, []).append((row, part))
+        else:
+            found.setdefault(group[0], []).append((row, " ".join(parts)))
+            result.merges[group[0]] = group[1:]
+
+
 def _source_row(table: Table, row: int, col: int, eng: EngIndex, array, positional_fallback: bool):
     """Fila de ENG de la que procede la celda. Devuelve (fila, método, detalle, estado matricial)."""
     eng_tab = eng.table.title
@@ -254,7 +321,12 @@ def check_against_manifest(units: List[TextUnit], eng: EngIndex, association: As
     usable: Dict[str, str] = {}
     problems: List[Problem] = []
     manifest_keys = {u.key for u in units}
+    continuation = {key: first for first, rest in association.merges.items() for key in rest}
     for unit in units:
+        if unit.key in continuation:
+            if continuation[unit.key] not in association.texts:
+                problems.append(Problem("missing", "sin traducción", unit.key))
+            continue  # la cubre la traducción completa de la primera línea
         if unit.key in eng.duplicates:
             problems.append(Problem("duplicate_key", f"la clave está repetida en {eng.table.title}", unit.key))
         elif unit.key not in eng.rows:

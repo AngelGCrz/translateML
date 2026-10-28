@@ -5,7 +5,7 @@ import csv
 import json
 from datetime import datetime, timezone
 from pathlib import Path as FilePath
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from .extraction.extractor import Extraction, TextUnit
 from .jsonpath import format_path
@@ -85,13 +85,28 @@ def write_review_csv(file: FilePath, units: List[TextUnit], key_column: str, tex
             writer.writerow([unit.key, unit.text, format_path(unit.path), unit.prefix, unit.suffix])
 
 
-def write_texts_csv(file: FilePath, texts: Dict[str, str], key_column: str, text_column: str) -> None:
-    """Textos de un idioma (clave -> texto) en el formato que acepta `rebuild --texts`."""
+MERGED_COLUMN = "MERGED"
+
+
+def write_texts_csv(file: FilePath, texts: Dict[str, str], key_column: str, text_column: str,
+                    merges: Optional[Dict[str, List[str]]] = None) -> None:
+    """Textos de un idioma (clave -> texto) en el formato que acepta `rebuild --texts`.
+
+    MERGED lista, separadas por espacios, las líneas de continuación que se unen a esa clave.
+    """
+    merges = merges or {}
     file.parent.mkdir(parents=True, exist_ok=True)
     with file.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.writer(handle)
-        writer.writerow([key_column, text_column])
-        writer.writerows(sorted(texts.items()))
+        writer.writerow([key_column, text_column, MERGED_COLUMN])
+        writer.writerows([key, text, " ".join(merges.get(key, []))] for key, text in sorted(texts.items()))
+
+
+def read_merges_csv(file: FilePath, key_column: str) -> Dict[str, List[str]]:
+    """Columna MERGED de un CSV de textos (vacía si no existe)."""
+    with FilePath(file).open(encoding="utf-8-sig", newline="") as handle:
+        return {row[key_column].strip(): row[MERGED_COLUMN].split()
+                for row in csv.DictReader(handle) if (row.get(MERGED_COLUMN) or "").strip()}
 
 
 def read_texts_csv(file: FilePath, key_column: str, text_column: str) -> Dict[str, str]:

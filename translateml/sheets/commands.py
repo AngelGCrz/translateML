@@ -244,14 +244,19 @@ def _build_translation(workbook, template, profile, units, eng, language: Langua
     if structural:
         entry.update(status="error", errors=[f"{p.kind}: {p.cell or p.key or ''} {p.detail}" for p in structural])
         return entry
-    code, rebuilt = build_language(template, profile, units, usable, language, settings, out, quiet=True)
+    merges = {k: v for k, v in association.merges.items() if k in usable}
+    code, rebuilt = build_language(template, profile, units, usable, language, settings, out, quiet=True,
+                                   merges=merges)
     rejected = {i["key"] for i in rebuilt["issues"] if i["blocking"] and i["kind"] != "missing"}
     applied = {k: v for k, v in usable.items() if k not in rejected}
-    write_texts_csv(out / "sheets" / f"{language.code}.csv", applied, settings.key_column, settings.text_column)
+    merges = {k: v for k, v in merges.items() if k in applied}
+    write_texts_csv(out / "sheets" / f"{language.code}.csv", applied, settings.key_column, settings.text_column, merges)
+    covered = set(applied) | {k for rest in merges.values() for k in rest}
     source_text = {u.key: u.text for u in units}
     entry.update(status="generated" if code == 0 else "error", output=rebuilt["output"], applied=len(applied),
+                 merged_lines=rebuilt["merged_lines"],
                  same_as_english=[k for k, v in sorted(applied.items()) if v == source_text[k]],
-                 missing=[u.key for u in units if u.key not in applied],
+                 missing=[u.key for u in units if u.key not in covered],
                  marker_issues=[i for i in rebuilt["issues"] if i["kind"] in MARKER_KINDS],
                  errors=rebuilt["validation_errors"])
     return entry
