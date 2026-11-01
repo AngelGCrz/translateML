@@ -72,14 +72,14 @@ se describe en la sección `xlsx` de `config/sheets.json`. La configuración act
 hoja real de Data:
 
 ```json
-"xlsx": { "header_row": 0, "association": "text", "text_column": "C", "positional_fallback": false }
+"xlsx": { "header_row": 0, "association": "text", "text_column": "C", "position": "verified" }
 ```
 
 - Sin fila de cabeceras; numeración en la columna B (se ignora) y texto en la columna **C**.
 - Una pestaña por idioma: `ENG` (origen), `ESP`, `DEU`, `ELL`, … `ZH-HANT` (ver `config/languages.json`).
 - **ENG**: los textos en inglés, frase a frase, con rótulos de sección si se quiere (`PAYTABLE`).
-- **Resto de pestañas**: una fórmula por fila que apunta a ENG, como hoy
-  (`=GOOGLETRANSLATE(ENG!C7,"en","es")`), o una traducción revisada a mano en esa celda.
+- **Resto de pestañas**: en cada fila, una fórmula que apunta a ENG, como hoy
+  (`=GOOGLETRANSLATE(ENG!C7,"en","es")`), una traducción escrita a mano o cualquier otra fórmula.
 
 ### Cómo se relaciona la hoja con la plantilla
 
@@ -94,8 +94,16 @@ hoja real de Data:
 2. **Cada traducción con su fila de ENG, por la referencia de su fórmula** (`ENG!C7` → fila 7),
    también en rangos (`ENG!C2:C`) y en la forma en que Google exporta sus funciones
    (`__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(ENG!C7,…)")`).
-   Una celda sin fórmula hacia ENG (por ejemplo un rótulo copiado) no se usa, salvo que se active
-   `positional_fallback` (misma fila que en ENG). Está desactivado: no se adivina por posición.
+3. **Celdas sin fórmula hacia ENG** (texto escrito a mano o cualquier otra fórmula, de la que se usa su
+   valor guardado): se relacionan con **la misma fila de ENG**, pero solo si se comprueba que la pestaña
+   está alineada con ENG (`"position": "verified"`):
+   - toda fórmula que apunta a ENG lo hace a su propia fila (`ESP!C7` → `ENG!C7`);
+   - ninguna fila tiene texto donde ENG está vacía;
+   - las demás columnas con contenido en las dos pestañas (la numeración de la columna B) son iguales.
+
+   Si algo falla, esas celdas no se usan y el informe lo explica con `position_not_verified` (las
+   fórmulas hacia ENG se siguen usando). `"position": "never"` no las usa nunca y `"always"` las usa sin
+   comprobar (con un aviso).
 
 Se leen los **valores guardados** en el `.xlsx`, nunca el texto de las fórmulas. `openpyxl` no calcula
 fórmulas: si una pestaña no tiene ningún valor guardado, el idioma no se genera y se pide volver a
@@ -193,6 +201,7 @@ cadenas pendientes de revisión en la plantilla (`pending_review`) y problemas d
 | `duplicate_key`, `invalid_key`, `ambiguous` | **Error**: el idioma no se genera | Mismo inglés con traducciones distintas o claves repetidas: corregir la hoja |
 | `no_cached_value` | **Error** | Volver a descargar el `.xlsx` cuando las fórmulas estén calculadas |
 | pestaña o cabecera ausente o repetida | **Error** | Revisar la hoja o `config/languages.json` / `config/sheets.json` |
+| `position_not_verified`, `unlinked` | Aviso | La pestaña no está alineada con ENG: sus celdas sin fórmula hacia ENG no se usan. El detalle indica la primera fila distinta |
 | `sentence_overlaps_rows` | Aviso | Frase de varias líneas cuya primera línea también tiene fila propia: se usa esa fila |
 | `not_in_template` | Aviso | Fila de ENG sin texto idéntico en la plantilla |
 | `eng_out_of_sync`, `not_in_sheet` | Aviso | Texto de la plantilla sin fila (o con otro inglés) en la hoja |
@@ -250,7 +259,7 @@ configuración de hoja, por ejemplo una por juego: `xlsx --sheets-config g500.js
 | Archivo | Contenido |
 |---|---|
 | `settings.json` | Carpeta de salida (`output_root`), nombre del archivo (`info.json`), política de traducciones faltantes (`keep_source` o `error`), nombres de columna `KEY`/`TEXT` |
-| `sheets.json` | Archivo por defecto (`file`) y una sección por formato. `xlsx`: `header_row` (0 = sin cabeceras), `association` (`text`/`key`), `text_column` (letra), `positional_fallback`, `key_header`/`text_header` y ajustes por pestaña en `tabs`. `docx`: `tabs` (orden de las pestañas; `null` = orden de `languages.json`), `numbering_pattern`, `paragraphs`. Una clave desconocida es un error; el formato plano anterior se sigue aceptando |
+| `sheets.json` | Archivo por defecto (`file`) y una sección por formato. `xlsx`: `header_row` (0 = sin cabeceras), `association` (`text`/`key`), `text_column` (letra), `position` (`verified`/`always`/`never`, para celdas sin fórmula hacia ENG), `key_header`/`text_header` y ajustes por pestaña en `tabs`. `docx`: `tabs` (orden de las pestañas; `null` = orden de `languages.json`), `numbering_pattern`, `paragraphs`. Una clave desconocida es un error; el formato plano anterior se sigue aceptando |
 | `languages.json` | Idioma de origen y los 18 idiomas: `code` (interno), `tab` (pestaña), `folder` (salida), `enabled` |
 | `profiles/pixi_info.json` | Qué partes de la plantilla son texto traducible (sección 7) |
 

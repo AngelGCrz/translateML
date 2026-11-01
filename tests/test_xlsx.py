@@ -400,6 +400,69 @@ class XlsxTextModeFlowTest(TextModeCase):
 
 
 @unittest.skipUnless(HAS_OPENPYXL, "openpyxl no está instalado")
+class PlainTextCellsTest(TextModeCase):
+    """Pestañas de traducción con texto escrito a mano o fórmulas que no son GOOGLETRANSLATE(ENG!...)."""
+
+    ENG = ["GAME RULES", "Play up to 50 lines.", "Jackpot text"]
+
+    def write_tabs(self, esp, numbers=("", "1", "2")):
+        eng = [["", n, t] for n, t in zip(("", "1", "2"), self.ENG)]
+        write_xlsx(self.xlsx, {"ENG": eng, "ESP": [["", n, c] for n, c in zip(numbers, esp)],
+                               "DEU": [["", n, ""] for n in ("", "1", "2")]})
+
+    def build_with(self, position="verified"):
+        config = Path(self.tmp.name) / "sheets.json"
+        config.write_text(json.dumps({"xlsx": {"header_row": 0, "association": "text", "text_column": "C",
+                                               "position": position}}), encoding="utf-8")
+        code, output = run("xlsx", "--sheets-config", str(config), "build", self.manifest, "--file", str(self.xlsx),
+                           "--lang", "esp")
+        return code, output, self.report()["languages"]["esp"]
+
+    def report(self):
+        return json.loads((self.out / "xlsx-build-report.json").read_text(encoding="utf-8"))
+
+    def test_plain_text_and_any_formula_use_their_row_when_aligned(self):
+        self.write_tabs(["REGLAS",                                   # texto escrito a mano
+                         F('=UPPER("juega hasta 50 líneas.")', "Juega hasta 50 líneas."),  # otra fórmula
+                         F(google_formula('GOOGLETRANSLATE(ENG!C3,"en","es")', "Texto del jackpot"),
+                           "Texto del jackpot")])
+        code, output, esp = self.build_with()
+        self.assertEqual(code, 0, output)
+        self.assertEqual(esp["association"], {"position": 2, "formula": 1})
+        self.assertNotIn("warning", esp)
+        lines = json.loads((self.out / "esp" / "info.json").read_text(encoding="utf-8"))["rules"]["pages"][0]
+        self.assertEqual(lines["titles"][0]["text"], "REGLAS")
+        self.assertEqual(lines["items"]["lines"][0], "• Juega hasta 50 líneas. ")
+
+    def test_rows_out_of_order_disable_position_but_keep_formulas(self):
+        self.write_tabs(["REGLAS", "Juega hasta 50 líneas.",
+                         F(google_formula('GOOGLETRANSLATE(ENG!C2,"en","es")', "Juega"), "Juega")])
+        code, output, esp = self.build_with()
+        self.assertEqual(esp["association"], {"formula": 1})
+        kinds = [p["kind"] for p in esp["problems"]]
+        self.assertEqual(kinds[0], "position_not_verified")
+        self.assertIn("ESP!C3 apunta a ENG!C2", esp["problems"][0]["detail"])
+        self.assertIn("unlinked", kinds)
+
+    def test_text_where_eng_is_empty_or_different_numbering_is_not_aligned(self):
+        self.ENG = ["GAME RULES", "Play up to 50 lines.", ""]
+        self.write_tabs(["REGLAS", "Juega hasta 50 líneas.", "sobra"])
+        self.assertIn("ESP!C3 tiene texto y ENG!C3 está vacía", self.build_with()[2]["problems"][0]["detail"])
+        self.ENG = ["GAME RULES", "Play up to 50 lines.", "Jackpot text"]
+        self.write_tabs(["REGLAS", "Juega hasta 50 líneas.", "Texto"], numbers=("", "1", "3"))
+        self.assertIn("ESP!B3 (3) no coincide con ENG!B3 (2)", self.build_with()[2]["problems"][0]["detail"])
+
+    def test_position_modes(self):
+        self.write_tabs(["REGLAS", "Juega hasta 50 líneas.",
+                         F(google_formula('GOOGLETRANSLATE(ENG!C2,"en","es")', "Juega"), "Juega")])
+        never = self.build_with("never")[2]
+        self.assertEqual(never["association"], {"formula": 1})
+        self.assertNotIn("position_not_verified", [p["kind"] for p in never["problems"]])
+        always = self.build_with("always")[2]
+        self.assertEqual(always["association"], {"position": 2, "formula": 1})
+        self.assertIn("sin comprobar", always["warning"])
+
+
 class GenerateCommandTest(TextModeCase):
     """`generate` = extract + xlsx build en un solo paso, con la misma salida que por separado."""
 

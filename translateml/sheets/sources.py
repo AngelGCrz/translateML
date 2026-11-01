@@ -20,8 +20,8 @@ class Source(Protocol):
     FORMAT: str                 # "xlsx", "docx"
     file: FilePath
     sha256: str
-    layout: TableLayout         # cómo interpretar las filas de cada pestaña
-    positions_verified: bool    # True si alignment_problem garantiza que la posición es fiable
+    layout: TableLayout         # cómo interpretar las filas de cada pestaña (y layout.position)
+    position_only: bool         # True si las filas solo se relacionan por posición (sin claves ni fórmulas)
 
     def tabs(self) -> List[str]: ...
 
@@ -33,7 +33,7 @@ class Source(Protocol):
         """Ubicación legible de cada fila, o None para usar la referencia de celda (ESP!C5)."""
 
     def alignment_problem(self, tab: str, source_tab: str) -> Optional[str]:
-        """Por qué las filas de `tab` no pueden relacionarse por posición con `source_tab`, o None."""
+        """Por qué las filas de `tab` pueden no estar en la misma posición que las de `source_tab`, o None."""
 
 
 def _open_xlsx(file: FilePath, config: SheetsConfig, languages: Languages) -> Source:

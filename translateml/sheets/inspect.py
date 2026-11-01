@@ -33,13 +33,13 @@ def inspect_spreadsheet(workbook, layout: TableLayout, languages: List[Language]
             continue
         table = load_table(workbook, language.tab, layout.header_row)
         info = _describe(table, layout, language.tab)
-        if getattr(workbook, "positions_verified", False):
-            info["structure_mismatch"] = workbook.alignment_problem(language.tab, source.tab)
+        if layout.position == "verified" and eng is not None:
+            info["alignment_problem"] = workbook.alignment_problem(language.tab, source.tab)
         if eng is not None and info["text_column"] is not None and _text_col(eng, layout, source.tab) is not None:
             info["formulas"] = _formula_links(table, _text_col(table, layout, language.tab),
                                               eng, _text_col(eng, layout, source.tab))
         report["languages"][language.code] = info
-    report["recommendations"] += _recommend(report, layout, source)
+    report["recommendations"] += _recommend(report, layout, source, getattr(workbook, "position_only", False))
     return report
 
 
@@ -93,7 +93,7 @@ def _formula_links(table: Table, col: int, eng: Table, eng_text_col) -> Dict:
     return {"counts": dict(kinds), "samples": samples}
 
 
-def _recommend(report: Dict, layout: TableLayout, source: Language) -> List[str]:
+def _recommend(report: Dict, layout: TableLayout, source: Language, position_only: bool) -> List[str]:
     tips = []
     eng = report["languages"].get(source.code, {})
     if eng.get("exists") and eng.get("text_column") is None:
@@ -107,18 +107,25 @@ def _recommend(report: Dict, layout: TableLayout, source: Language) -> List[str]
         if counts.get("formula_other_row"):
             tips.append(f"{info['tab']}: hay fórmulas que apuntan a otra fila de {source.tab}; se asociarán por la "
                         "referencia de la fórmula, no por posición.")
-        if (counts.get("static_value") or counts.get("formula_without_eng_reference")) and info.get("key_column") is None \
-                and layout.association == "key":
-            how = ("se asociarán por posición (misma fila) porque positional_fallback está activado"
-                   if layout.positional_fallback else
-                   "no se pueden asociar: añade una columna "
-                   f"'{layout.key_header}' en {info['tab']} o activa positional_fallback si sus filas coinciden con {source.tab}")
-            tips.append(f"{info['tab']}: hay valores sin referencia a {source.tab}; {how}.")
-        if info.get("structure_mismatch"):
-            tips.append(f"{info['tab']}: estructura distinta de {source.tab} ({info['structure_mismatch']}); "
-                        "ese idioma no se generará.")
+        problem = info.get("alignment_problem")
+        if position_only and problem:
+            tips.append(f"{info['tab']}: estructura distinta de {source.tab} ({problem}); ese idioma no se generará.")
+        unlinked = counts.get("static_value", 0) + counts.get("formula_without_eng_reference", 0)
+        if unlinked and not position_only and not (layout.association == "key" and info.get("key_column")):
+            tips.append(f"{info['tab']}: {unlinked} celdas con texto o fórmula sin referencia a {source.tab}; "
+                        f"{_position_outcome(layout, problem, info['tab'], source.tab)}.")
         if info.get("formulas_without_saved_value"):
             tips.append(f"{info['tab']}: {info['formulas_without_saved_value']} fórmulas sin valor guardado. openpyxl no "
                         "calcula fórmulas: vuelve a descargar el .xlsx desde Google Sheets cuando hayan terminado de "
                         "calcularse.")
     return tips
+
+
+def _position_outcome(layout: TableLayout, problem, tab: str, eng_tab: str) -> str:
+    if layout.position == "always":
+        return "se asociarán por su fila sin comprobar (\"position\": \"always\")"
+    if layout.position == "verified" and not problem:
+        return f"se asociarán por su fila: {tab} está alineada con {eng_tab}"
+    reason = problem or "\"position\" es \"never\""
+    return (f"no se usarán ({reason}). Añade una columna '{layout.key_header}' en {tab} o deja sus filas alineadas "
+            f"con {eng_tab}")

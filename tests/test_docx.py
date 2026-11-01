@@ -179,8 +179,8 @@ class DocxFlowTest(unittest.TestCase):
         languages = load_languages(Path(__file__).parent / "fixtures" / "languages-3.json")
         source = DocxDocument(self.docx, ["ENG", "ESP", "DEU"])
         report = inspect_spreadsheet(source, source.layout, languages.enabled, languages.get("eng"))
-        self.assertIsNone(report["languages"]["esp"]["structure_mismatch"])
-        self.assertIn("elemento 3", report["languages"]["deu"]["structure_mismatch"])
+        self.assertIsNone(report["languages"]["esp"]["alignment_problem"])
+        self.assertIn("elemento 3", report["languages"]["deu"]["alignment_problem"])
         self.assertTrue(any("DEU: estructura distinta" in tip for tip in report["recommendations"]))
 
     def test_generate_accepts_docx(self):

@@ -13,7 +13,7 @@ import csv
 import json
 from dataclasses import dataclass
 from pathlib import Path as FilePath
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from ..config import ConfigError, Language, Languages, Settings, load_languages
 from ..export import write_json, write_texts_csv
@@ -256,25 +256,34 @@ def _build_source_language(ctx: _Build, language: Language) -> Dict:
 
 
 def _build_translation(ctx: _Build, language: Language) -> Dict:
-    error = _unusable_tab(ctx, language)
-    if error:
-        return {"tab": language.tab, "status": "error", "errors": [error]}
     layout, tab = ctx.layout, language.tab
+    if not tab or tab not in ctx.source.tabs():
+        return {"tab": tab, "status": "error", "errors": [
+            missing_tab_message(ctx.source.file.name, tab, ctx.source.tabs())
+            + f" No se asocia ninguna traducción de {language.code}."]}
+    allow_position, misalignment = _position_check(ctx, tab)
+    if misalignment and ctx.source.position_only:
+        return {"tab": tab, "status": "error", "errors": [_structure_error(ctx, language, misalignment)]}
     try:
         association = associate(load_table(ctx.source, tab, layout.header_row), ctx.eng, ctx.game,
-                                layout.key_header_for(tab), layout.text_header_for(tab), layout.positional_fallback,
+                                layout.key_header_for(tab), layout.text_header_for(tab), allow_position,
                                 layout.text_column_for(tab))
     except SheetsStructureError as exc:
         return {"tab": tab, "status": "error", "errors": [str(exc)]}
 
     usable, problems = check_against_manifest(ctx.units, ctx.eng, association)
     all_problems: List[Problem] = association.problems + problems
+    if misalignment and any(p.kind == "unlinked" for p in association.problems):
+        origin = ctx.eng.table.title
+        all_problems.insert(0, Problem(
+            "position_not_verified", f"las celdas sin fórmula que referencie {origin} no se usan porque las filas de "
+            f"{tab} pueden no corresponder a las de {origin}: {misalignment}", cell=tab, blocking=False))
     structural = [p for p in ctx.eng.problems + all_problems if p.kind in STRUCTURAL]
     entry: Dict = {"tab": tab, "association": dict(association.methods),
                    "problems": [vars(p) for p in all_problems if p.kind not in ("missing", "not_in_sheet")]}
     by_position = association.methods.get("position")
-    if by_position and not ctx.source.positions_verified:
-        entry["warning"] = f"{by_position} traducciones asociadas por posición (positional_fallback activado)."
+    if by_position and layout.position == "always":
+        entry["warning"] = f"{by_position} traducciones asociadas por posición sin comprobar (\"position\": \"always\")."
     if structural:
         entry.update(status="error", errors=[f"{p.kind}: {p.cell or p.key or ''} {p.detail}" for p in structural])
         return entry
@@ -298,19 +307,20 @@ def _build_translation(ctx: _Build, language: Language) -> Dict:
     return entry
 
 
-def _unusable_tab(ctx: _Build, language: Language) -> Optional[str]:
-    """Por qué no se puede asociar ninguna traducción de este idioma, o None."""
-    source, tabs = ctx.source, ctx.source.tabs()
-    if not language.tab or language.tab not in tabs:
-        return (missing_tab_message(source.file.name, language.tab, tabs)
-                + f" No se asocia ninguna traducción de {language.code}.")
+def _position_check(ctx: _Build, tab: str) -> Tuple[bool, Optional[str]]:
+    """Si las celdas sin referencia a ENG pueden usar su fila y, si no, por qué (layout.position)."""
+    mode = ctx.layout.position
+    if mode != "verified":
+        return mode == "always", None
+    detail = ctx.source.alignment_problem(tab, ctx.eng.table.title)
+    return detail is None, detail
+
+
+def _structure_error(ctx: _Build, language: Language, detail: str) -> str:
     origin = ctx.eng.table.title
-    mismatch = source.alignment_problem(language.tab, origin)
-    if mismatch:
-        return (f"structure_mismatch: la pestaña {language.tab} no tiene la misma estructura que {origin} ({mismatch}). "
-                f"Sus textos se relacionan por posición, así que no se asocia ninguna traducción de {language.code}: "
-                f"deja las mismas tablas, filas y celdas que en {origin}.")
-    return None
+    return (f"structure_mismatch: la pestaña {language.tab} no tiene la misma estructura que {origin} ({detail}). "
+            f"Sus textos se relacionan por posición, así que no se asocia ninguna traducción de {language.code}: "
+            f"deja las mismas tablas, filas y celdas que en {origin}.")
 
 
 # --- utilidades ----------------------------------------------------------------------------------

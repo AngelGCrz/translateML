@@ -138,3 +138,40 @@ def cell_name(table: Table, row: int, col: int) -> str:
     if table.labels is not None and 0 < row <= len(table.labels):
         return f"{table.title} ({table.labels[row - 1]})"
     return f"{table.title}!{a1_cell(row, col)}"
+
+
+def row_alignment_problem(table: Table, col: int, eng: Table, eng_col: int) -> Optional[str]:
+    """Por qué la fila de una celda de `table` puede no ser la misma fila de `eng`, o None si están alineadas.
+
+    Se usa para asociar por posición las celdas sin fórmula que referencie ENG (texto escrito a mano o
+    cualquier otra fórmula). La pestaña se considera alineada si:
+    1. toda fórmula de la columna de texto que referencia la columna de texto de ENG apunta a su propia
+       fila (una matricial ENG!C2:C anclada en la fila 2);
+    2. ninguna fila tiene texto donde ENG no lo tiene;
+    3. las demás columnas con contenido en las dos pestañas (p. ej. la numeración) son iguales.
+    """
+    for row in table.data_rows():
+        for ref in references(table.formula(row, col), eng.title):
+            if ref.col != eng_col or ref.row is None:
+                continue
+            if ref.row != row:
+                return (f"la fórmula de {cell_name(table, row, col)} apunta a {cell_name(eng, ref.row, eng_col)}: "
+                        f"las filas de {table.title} no están en el mismo orden que las de {eng.title}")
+    last = max(table.last_row, eng.last_row)
+    for row in range(table.header_row + 1, last + 1):
+        if table.value(row, col).strip() and not eng.value(row, eng_col).strip():
+            return f"{cell_name(table, row, col)} tiene texto y {cell_name(eng, row, eng_col)} está vacía"
+    for other in _shared_columns(table, eng, exclude={col, eng_col}):
+        for row in range(table.header_row + 1, last + 1):
+            mine, theirs = table.value(row, other).strip(), eng.value(row, other).strip()
+            if mine != theirs:
+                return (f"{cell_name(table, row, other)} ({mine or 'vacía'}) no coincide con "
+                        f"{cell_name(eng, row, other)} ({theirs or 'vacía'})")
+    return None
+
+
+def _shared_columns(table: Table, eng: Table, exclude: Set[int]) -> List[int]:
+    """Columnas, aparte de las de texto, con algún valor en ambas pestañas."""
+    def used(t: Table) -> Set[int]:
+        return {c for r in t.data_rows() for c, v in enumerate(t.row_values(r)) if v.strip()}
+    return sorted((used(table) & used(eng)) - exclude)

@@ -35,7 +35,7 @@ _SECTION_BREAK = f"{_W}pPr/{_W}sectPr"
 
 # Una columna de texto, sin cabeceras, asociada por texto exacto y por posición verificada.
 LAYOUT = TableLayout(header_row=0, key_header="", text_header="", association="text", text_column="A",
-                     positional_fallback=True)
+                     position="verified")
 
 
 @dataclass
@@ -53,7 +53,8 @@ class _Tab:
 class DocxDocument:
     FORMAT = "docx"
     layout = LAYOUT
-    positions_verified = True  # alignment_problem exige la misma estructura que la pestaña de origen
+    # Todas las celdas se relacionan por posición: si la estructura no coincide, no se usa la pestaña.
+    position_only = True
 
     def __init__(self, file, tab_names: Sequence[str], options: DocxOptions = DocxOptions()):
         self.file = FilePath(file)

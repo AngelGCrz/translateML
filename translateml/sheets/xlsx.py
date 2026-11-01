@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .errors import SheetsReadError, SheetsStructureError
 from .settings import TableLayout
+from .table import column_index, load_table, row_alignment_problem
 from .tabs import missing_tab_message
 
 # Hoja con cabeceras KEY/TEXT en la fila 1; config/sheets.json ("xlsx") la sustituye.
@@ -27,8 +28,9 @@ _INSTALL = ("Falta openpyxl para leer archivos .xlsx. Instálalo con:\n"
 
 class XlsxWorkbook:
     FORMAT = "xlsx"
-    # La posición solo se usa con positional_fallback, y esa decisión es de quien configura la hoja.
-    positions_verified = False
+    # Las celdas también se relacionan por clave o por fórmula: si la alineación falla, solo dejan de
+    # usarse las que dependen de su posición.
+    position_only = False
 
     def __init__(self, file, layout: TableLayout = DEFAULT_LAYOUT):
         self.file = FilePath(file)
@@ -93,7 +95,17 @@ class XlsxWorkbook:
         return None  # las celdas se nombran con su referencia: ESP!C5
 
     def alignment_problem(self, tab: str, source_tab: str) -> Optional[str]:
-        return None  # las filas se relacionan por clave o por la fórmula, no por su forma
+        """Por qué las filas de `tab` pueden no corresponder a las mismas filas de `source_tab` (table.py)."""
+        table = load_table(self, tab, self.layout.header_row)
+        eng = load_table(self, source_tab, self.layout.header_row)
+        col, eng_col = self._text_column(table), self._text_column(eng)
+        if col is None or eng_col is None:
+            return None  # sin columna de texto la asociación ya falla con un error más claro
+        return row_alignment_problem(table, col, eng, eng_col)
+
+    def _text_column(self, table) -> Optional[int]:
+        letter = self.layout.text_column_for(table.title)
+        return column_index(letter) if letter else table.column(self.layout.text_header_for(table.title))
 
 
 def _formula(raw):

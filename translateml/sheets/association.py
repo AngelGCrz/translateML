@@ -14,8 +14,10 @@ Las pestañas de traducción se asocian con las filas de ENG, por orden de prefe
   2. por la referencia de su fórmula a ENG (=GOOGLETRANSLATE(ENG!B5; ...) -> fila 5 de ENG),
      incluidas fórmulas matriciales sobre un rango (ENG!B2:B) y la forma en que Google Sheets
      exporta sus funciones (__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(ENG!B5,...)"));
-  3. por posición (misma fila que en ENG) solo si positional_fallback está activado
-     explícitamente; si no, una celda sin referencia es un error, nunca una suposición.
+  3. por posición (misma fila que en ENG) cuando la celda no tiene fórmula que referencie ENG: texto
+     escrito a mano o cualquier otra fórmula (se usa su valor guardado). Solo si quien llama lo permite
+     (`allow_position`): por defecto, cuando se ha comprobado que la pestaña está alineada con ENG
+     ("position" en config/sheets.json); si no, una celda sin referencia es un error, nunca una suposición.
 Se descarta cualquier asociación ambigua: una clave repetida o dos filas con traducciones distintas
 para el mismo texto.
 """
@@ -195,7 +197,7 @@ class Association:
 
 
 def associate(table: Table, eng: EngIndex, game: str, key_header: str, text_header: str,
-              positional_fallback: bool, text_letter: Optional[str] = None) -> Association:
+              allow_position: bool, text_letter: Optional[str] = None) -> Association:
     """Traducciones de una pestaña (valores calculados) por clave interna."""
     result = Association(table.title)
     text_col = text_column(table, text_header, text_letter)
@@ -218,7 +220,7 @@ def associate(table: Table, eng: EngIndex, game: str, key_header: str, text_head
                 result.problems.append(Problem("unknown_key", f"la clave {raw} no existe en {eng.table.title}", key, where))
                 continue
         else:
-            eng_row, method, detail, array = _source_row(table, row, text_col, eng, array, positional_fallback)
+            eng_row, method, detail, array = _source_row(table, row, text_col, eng, array, allow_position)
             if eng_row is None:
                 if value.strip():
                     result.problems.append(Problem("unlinked", detail, cell=where))
@@ -289,7 +291,7 @@ def _split_translation(table: Table, row: int, col: int, value: str, groups: Lis
             result.merges[group[0]] = group[1:]
 
 
-def _source_row(table: Table, row: int, col: int, eng: EngIndex, array, positional_fallback: bool):
+def _source_row(table: Table, row: int, col: int, eng: EngIndex, array, allow_position: bool):
     """Fila de ENG de la que procede la celda. Devuelve (fila, método, detalle, estado matricial)."""
     eng_tab = eng.table.title
     formula = table.formula(row, col)
@@ -309,11 +311,12 @@ def _source_row(table: Table, row: int, col: int, eng: EngIndex, array, position
         eng_row = start + (row - anchor)
         if end is None or eng_row <= end:
             return eng_row, "array_formula", "", array
-    if positional_fallback:
+    if allow_position:
         return row, "position", "", None
     return None, "position", (f"no se puede saber a qué texto de {eng_tab} corresponde: la celda no tiene fórmula "
-                              f"que referencie {eng_tab}. Añade una columna de clave en esta pestaña o, si sus filas "
-                              f"coinciden siempre con {eng_tab}, activa positional_fallback en config/sheets.json"), None
+                              f"que referencie {eng_tab} y no se puede usar su fila (ver position_not_verified, o "
+                              f"\"position\" en config/sheets.json). Añade una columna de clave en esta pestaña o "
+                              f"deja sus filas alineadas con {eng_tab}"), None
 
 
 def check_against_manifest(units: List[TextUnit], eng: EngIndex, association: Association):

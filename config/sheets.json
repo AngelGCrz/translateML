@@ -5,7 +5,7 @@
         "association": "text",
         "text_column": "C",
         "tabs": {},
-        "positional_fallback": false
+        "position": "verified"
     },
     "docx": {
         "tabs": null,

@@ -9,7 +9,10 @@ Formato, con una sección por tipo de archivo; el que se usa lo decide la extens
             "association": "text",        // "text" (inglés exacto) o "key" (columna KEY)
             "text_column": "C",           // letra; obligatoria sin cabeceras
             "key_header": "KEY", "text_header": "TEXT",   // opcionales, por defecto settings.json
-            "positional_fallback": false,
+            "position": "verified",       // celdas sin fórmula que referencie ENG (texto escrito a mano o
+                                          // cualquier otra fórmula): "verified" = misma fila que en ENG si
+                                          // la pestaña está alineada con ENG; "always" = misma fila sin
+                                          // comprobar; "never" = no se usan
             "tabs": {"ESP": {"text_column": "D"}}          // ajustes por pestaña
         },
         "docx": {                         // multidioma.docx de Google Docs
@@ -20,7 +23,8 @@ Formato, con una sección por tipo de archivo; el que se usa lo decide la extens
     }
 
 Se sigue aceptando el formato anterior, plano (las claves de "xlsx" en la raíz, "xlsx_file" y
-"docx_tabs"). Una clave desconocida es un error, para que una errata no pase desapercibida.
+"docx_tabs"), y "positional_fallback" (true = "always", false = "never") en lugar de "position".
+Una clave desconocida es un error, para que una errata no pase desapercibida.
 """
 from __future__ import annotations
 
@@ -34,9 +38,11 @@ from ..config import CONFIG_DIR
 from .errors import SheetsConfigError
 
 ASSOCIATIONS = ("key", "text")
+POSITION_MODES = ("verified", "always", "never")
 DEFAULT_NUMBERING = r"^\s*\d+\s*[.)]?\s*$"
 _LETTER = re.compile(r"^[A-Za-z]{1,3}$")
-_XLSX_KEYS = {"header_row", "association", "text_column", "key_header", "text_header", "positional_fallback", "tabs"}
+_XLSX_KEYS = {"header_row", "association", "text_column", "key_header", "text_header", "position",
+              "positional_fallback", "tabs"}
 _TAB_KEYS = {"text_column", "text_header", "key_header"}
 _DOCX_KEYS = {"tabs", "numbering_pattern", "paragraphs"}
 _LEGACY_KEYS = _XLSX_KEYS | {"xlsx_file", "docx_tabs"}
@@ -50,7 +56,7 @@ class TableLayout:
     text_header: str
     association: str = "key"
     text_column: Optional[str] = None  # letra, para hojas sin cabeceras
-    positional_fallback: bool = False
+    position: str = "verified"         # POSITION_MODES: si una celda sin referencia a ENG usa su fila
     tabs: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
     def text_header_for(self, tab: str) -> str:
@@ -130,8 +136,18 @@ def _table_layout(raw: Dict, key_header: str, text_header: str) -> TableLayout:
         raise SheetsConfigError("Sin fila de cabeceras (header_row 0) hay que indicar text_column (p. ej. \"C\").")
     return TableLayout(header_row=header_row, key_header=raw.get("key_header", key_header),
                        text_header=raw.get("text_header", text_header), association=association,
-                       text_column=raw.get("text_column"), positional_fallback=bool(raw.get("positional_fallback", False)),
-                       tabs=tabs)
+                       text_column=raw.get("text_column"), position=_position_mode(raw), tabs=tabs)
+
+
+def _position_mode(raw: Dict) -> str:
+    if "position" in raw and "positional_fallback" in raw:
+        raise SheetsConfigError("xlsx: usa \"position\" o el antiguo \"positional_fallback\", no los dos.")
+    if "positional_fallback" in raw:
+        return "always" if raw["positional_fallback"] else "never"
+    mode = raw.get("position", "verified")
+    if mode not in POSITION_MODES:
+        raise SheetsConfigError(f"xlsx.position debe ser uno de {POSITION_MODES}, no {mode!r}")
+    return mode
 
 
 def _docx_options(raw: Dict) -> DocxOptions:
