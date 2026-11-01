@@ -9,21 +9,30 @@ y no se escribe.
 from __future__ import annotations
 
 import datetime
-import difflib
 import hashlib
 import zipfile
 from pathlib import Path as FilePath
 from typing import Dict, List, Optional, Set, Tuple
 
 from .errors import SheetsReadError, SheetsStructureError
+from .settings import TableLayout
+from .tabs import missing_tab_message
+
+# Hoja con cabeceras KEY/TEXT en la fila 1; config/sheets.json ("xlsx") la sustituye.
+DEFAULT_LAYOUT = TableLayout(header_row=1, key_header="KEY", text_header="TEXT")
 
 _INSTALL = ("Falta openpyxl para leer archivos .xlsx. Instálalo con:\n"
             "  python3 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt")
 
 
 class XlsxWorkbook:
-    def __init__(self, file):
+    FORMAT = "xlsx"
+    # La posición solo se usa con positional_fallback, y esa decisión es de quien configura la hoja.
+    positions_verified = False
+
+    def __init__(self, file, layout: TableLayout = DEFAULT_LAYOUT):
         self.file = FilePath(file)
+        self.layout = layout
         if not self.file.is_file():
             raise SheetsReadError(f"No existe el archivo {self.file}.")
         if self.file.suffix.lower() not in (".xlsx", ".xlsm"):
@@ -80,20 +89,11 @@ class XlsxWorkbook:
         """Celdas con fórmula y sin valor guardado: (fila 1-based, columna 0-based)."""
         return set(self._uncached.get(tab, set()))
 
+    def labels(self, tab: str) -> Optional[List[str]]:
+        return None  # las celdas se nombran con su referencia: ESP!C5
 
-def suggest_tab(name: str, tabs: List[str]) -> Optional[str]:
-    """Pestaña existente que probablemente sea `name` (otras mayúsculas, espacios o una errata)."""
-    by_lower = {t.strip().lower(): t for t in tabs}
-    if name.strip().lower() in by_lower:
-        return by_lower[name.strip().lower()]
-    close = difflib.get_close_matches(name, tabs, n=1, cutoff=0.75)
-    return close[0] if close else None
-
-
-def missing_tab_message(file_name: str, tab: str, tabs: List[str]) -> str:
-    hint = suggest_tab(tab, tabs)
-    hint = f" ¿Es {hint!r}? Si es así, corrige 'tab' en config/languages.json." if hint else ""
-    return f"{file_name} no tiene la pestaña {tab!r} (pestañas: {', '.join(tabs)}).{hint}"
+    def alignment_problem(self, tab: str, source_tab: str) -> Optional[str]:
+        return None  # las filas se relacionan por clave o por la fórmula, no por su forma
 
 
 def _formula(raw):

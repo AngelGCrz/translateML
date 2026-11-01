@@ -1,8 +1,9 @@
-"""Inspección de la estructura real de Multidioma.xlsx (solo lectura).
+"""Inspección de la estructura real del archivo de traducciones (solo lectura).
 
 Responde a lo necesario antes de generar: qué pestañas y cabeceras existen, si hay columna
-de clave, si las fórmulas tienen su valor guardado y cómo obtiene cada pestaña de traducción
-su texto de ENG (misma fila, otra fila, rango matricial o sin referencia).
+de clave, si las fórmulas tienen su valor guardado, cómo obtiene cada pestaña de traducción
+su texto de ENG (misma fila, otra fila, rango matricial o sin referencia) y, en formatos que
+se asocian por posición (.docx), si cada pestaña tiene la misma estructura que ENG.
 """
 from __future__ import annotations
 
@@ -10,17 +11,17 @@ from collections import Counter
 from typing import Dict, List
 
 from ..config import Language
-from .settings import SheetsConfig
+from .settings import TableLayout
 from .table import Table, column_index, column_letter, load_table, references
 
 
-def inspect_spreadsheet(workbook, config: SheetsConfig, languages: List[Language], source: Language) -> Dict:
+def inspect_spreadsheet(workbook, layout: TableLayout, languages: List[Language], source: Language) -> Dict:
     tabs = workbook.tabs()
     report: Dict = {"tabs": list(tabs), "languages": {}, "recommendations": []}
     eng = None
     if source.tab in tabs:
-        eng = load_table(workbook, source.tab, config.header_row)
-        report["languages"][source.code] = _describe(eng, config, source.tab)
+        eng = load_table(workbook, source.tab, layout.header_row)
+        report["languages"][source.code] = _describe(eng, layout, source.tab)
     else:
         report["recommendations"].append(f"Falta la pestaña de origen {source.tab}.")
     for language in languages:
@@ -30,24 +31,26 @@ def inspect_spreadsheet(workbook, config: SheetsConfig, languages: List[Language
             report["languages"][language.code] = {"tab": language.tab, "exists": False}
             report["recommendations"].append(f"Falta la pestaña {language.tab} ({language.code}).")
             continue
-        table = load_table(workbook, language.tab, config.header_row)
-        info = _describe(table, config, language.tab)
-        if eng is not None and info["text_column"] is not None and _text_col(eng, config, source.tab) is not None:
-            info["formulas"] = _formula_links(table, _text_col(table, config, language.tab),
-                                              eng, _text_col(eng, config, source.tab))
+        table = load_table(workbook, language.tab, layout.header_row)
+        info = _describe(table, layout, language.tab)
+        if getattr(workbook, "positions_verified", False):
+            info["structure_mismatch"] = workbook.alignment_problem(language.tab, source.tab)
+        if eng is not None and info["text_column"] is not None and _text_col(eng, layout, source.tab) is not None:
+            info["formulas"] = _formula_links(table, _text_col(table, layout, language.tab),
+                                              eng, _text_col(eng, layout, source.tab))
         report["languages"][language.code] = info
-    report["recommendations"] += _recommend(report, config, source)
+    report["recommendations"] += _recommend(report, layout, source)
     return report
 
 
-def _text_col(table: Table, config: SheetsConfig, tab: str):
-    letter = config.text_column_for(tab)
-    return column_index(letter) if letter else table.column(config.text_header_for(tab))
+def _text_col(table: Table, layout: TableLayout, tab: str):
+    letter = layout.text_column_for(tab)
+    return column_index(letter) if letter else table.column(layout.text_header_for(tab))
 
 
-def _describe(table: Table, config: SheetsConfig, tab: str) -> Dict:
-    key_col = table.column(config.key_header_for(tab))
-    text_col = _text_col(table, config, tab)
+def _describe(table: Table, layout: TableLayout, tab: str) -> Dict:
+    key_col = table.column(layout.key_header_for(tab))
+    text_col = _text_col(table, layout, tab)
     rows = list(table.data_rows())
     return {
         "tab": tab, "exists": True,
@@ -90,14 +93,14 @@ def _formula_links(table: Table, col: int, eng: Table, eng_text_col) -> Dict:
     return {"counts": dict(kinds), "samples": samples}
 
 
-def _recommend(report: Dict, config: SheetsConfig, source: Language) -> List[str]:
+def _recommend(report: Dict, layout: TableLayout, source: Language) -> List[str]:
     tips = []
     eng = report["languages"].get(source.code, {})
     if eng.get("exists") and eng.get("text_column") is None:
-        tips.append(f"{source.tab} no tiene la columna '{config.text_header_for(source.tab)}'. Configura "
+        tips.append(f"{source.tab} no tiene la columna '{layout.text_header_for(source.tab)}'. Configura "
                     "text_header (o header_row 0 y text_column si la hoja no tiene cabeceras) en config/sheets.json.")
-    if eng.get("exists") and eng.get("key_column") is None and config.association == "key":
-        tips.append(f"{source.tab} no tiene columna '{config.key_header}': las traducciones no se pueden asociar con la "
+    if eng.get("exists") and eng.get("key_column") is None and layout.association == "key":
+        tips.append(f"{source.tab} no tiene columna '{layout.key_header}': las traducciones no se pueden asociar con la "
                     "plantilla. Importa en ENG las columnas KEY y TEXT de eng-sheet.csv ('xlsx export').")
     for code, info in report["languages"].items():
         counts = info.get("formulas", {}).get("counts", {})
@@ -105,12 +108,15 @@ def _recommend(report: Dict, config: SheetsConfig, source: Language) -> List[str
             tips.append(f"{info['tab']}: hay fórmulas que apuntan a otra fila de {source.tab}; se asociarán por la "
                         "referencia de la fórmula, no por posición.")
         if (counts.get("static_value") or counts.get("formula_without_eng_reference")) and info.get("key_column") is None \
-                and config.association == "key":
+                and layout.association == "key":
             how = ("se asociarán por posición (misma fila) porque positional_fallback está activado"
-                   if config.positional_fallback else
+                   if layout.positional_fallback else
                    "no se pueden asociar: añade una columna "
-                   f"'{config.key_header}' en {info['tab']} o activa positional_fallback si sus filas coinciden con {source.tab}")
+                   f"'{layout.key_header}' en {info['tab']} o activa positional_fallback si sus filas coinciden con {source.tab}")
             tips.append(f"{info['tab']}: hay valores sin referencia a {source.tab}; {how}.")
+        if info.get("structure_mismatch"):
+            tips.append(f"{info['tab']}: estructura distinta de {source.tab} ({info['structure_mismatch']}); "
+                        "ese idioma no se generará.")
         if info.get("formulas_without_saved_value"):
             tips.append(f"{info['tab']}: {info['formulas_without_saved_value']} fórmulas sin valor guardado. openpyxl no "
                         "calcula fórmulas: vuelve a descargar el .xlsx desde Google Sheets cuando hayan terminado de "

@@ -285,7 +285,7 @@ class InspectTest(unittest.TestCase):
         deu = [["TEXT"]] + [[F(translate_formula(0, eng_row=3), "x")], ["manual"]]
         fake = FakeSheets({"ENG": eng_rows(), "ESP": esp_rows(), "DEU": deu, "Notas": [["a"]]})
         config = load_sheets_config("KEY", "TEXT", file=Path(__file__).parent / "fixtures" / "sheets-key-mode.json")
-        report = inspect_spreadsheet(fake, config, languages.enabled, languages.get("eng"))
+        report = inspect_spreadsheet(fake, config.xlsx, languages.enabled, languages.get("eng"))
         self.assertEqual(report["tabs"], ["ENG", "ESP", "DEU", "Notas"])
         self.assertEqual((report["languages"]["eng"]["key_column"], report["languages"]["eng"]["text_column"]), ("A", "B"))
         self.assertEqual(report["languages"]["esp"]["formulas"]["counts"], {"formula_same_row": len(UNITS)})

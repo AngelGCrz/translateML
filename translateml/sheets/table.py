@@ -67,6 +67,7 @@ class Table:
     values: List[List[str]]
     formulas: List[List[str]]
     uncached: Set[Tuple[int, int]] = field(default_factory=set)  # fórmulas sin valor guardado
+    labels: Optional[List[str]] = None  # ubicación legible por fila (.docx: "tabla 2, fila 3, celda 2")
 
     def __post_init__(self):
         headers: Dict[str, int] = {}
@@ -116,7 +117,8 @@ class Table:
 
 
 def load_table(workbook, tab: str, header_row: int) -> Table:
-    return Table(tab, header_row, workbook.read(tab), workbook.read(tab, formulas=True), workbook.missing_values(tab))
+    return Table(tab, header_row, workbook.read(tab), workbook.read(tab, formulas=True), workbook.missing_values(tab),
+                 workbook.labels(tab))
 
 
 def required_column(table: Table, header: str) -> int:
@@ -133,4 +135,6 @@ def is_error_value(value: str) -> bool:
 
 
 def cell_name(table: Table, row: int, col: int) -> str:
+    if table.labels is not None and 0 < row <= len(table.labels):
+        return f"{table.title} ({table.labels[row - 1]})"
     return f"{table.title}!{a1_cell(row, col)}"

@@ -4,9 +4,9 @@
   python3 -m translateml extract  PLANTILLA            manifest, CSV de revisión e informe
   python3 -m translateml rebuild  MANIFEST [--texts CSV] [--lang eng]
   python3 -m translateml verify   PLANTILLA [...]      extrae y reconstruye el inglés en memoria
-  python3 -m translateml generate PLANTILLA --xlsx F   extract + xlsx build en un solo paso
+  python3 -m translateml generate PLANTILLA --file F   extract + build en un solo paso (.xlsx o .docx)
   python3 -m translateml clean [JUEGO] [--keep-manifest] [--yes]   borra resultados de output/
-  python3 -m translateml xlsx {inspect,export,build} ...      Multidioma.xlsx local (ver sheets/commands.py)
+  python3 -m translateml xlsx {inspect,export,build} ...      Multidioma.xlsx/.docx local (ver sheets/commands.py)
 """
 from __future__ import annotations
 
@@ -28,7 +28,6 @@ from .pipeline import build_language, enabled_language, load_manifest_template
 from .rebuild import rebuild
 from .sheets import commands as sheets_commands
 from .sheets.errors import SheetsError
-from .sheets.settings import load_sheets_config
 from . import __version__
 from .template import Template, TemplateError, load_template
 from .validation import validate_output
@@ -44,7 +43,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     generate_cmd = commands.add_parser("generate", help="Extrae la plantilla y genera todos los idiomas desde el .xlsx.")
     generate_cmd.add_argument("template", help="info.json inglés del juego.")
-    generate_cmd.add_argument("--xlsx", help="Multidioma.xlsx (por defecto, xlsx_file de config/sheets.json).")
+    sheets_commands.add_file_option(generate_cmd)
     generate_cmd.add_argument("--lang", help="Idiomas separados por comas (por defecto, todos los habilitados).")
     generate_cmd.add_argument("--name", help="Nombre del juego (por defecto, la carpeta gNNN de la ruta).")
     generate_cmd.add_argument("--out", help="Carpeta de resultados (por defecto output/<juego>).")
@@ -89,7 +88,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         settings = load_settings()
         handlers = {"analyze": cmd_analyze, "extract": cmd_extract, "rebuild": cmd_rebuild, "verify": cmd_verify,
-                    "xlsx": sheets_commands.run, "generate": cmd_generate, "clean": cmd_clean}
+                    "xlsx": sheets_commands.run, "docx": sheets_commands.run, "generate": cmd_generate, "clean": cmd_clean}
         return handlers[args.command](args, settings)
     except (ConfigError, TemplateError, ProfileError, ManifestError, SheetsError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -140,8 +139,8 @@ def cmd_extract(args, settings: Settings) -> int:
 
 
 def cmd_generate(args, settings: Settings) -> int:
-    config = load_sheets_config(settings.key_column, settings.text_column, file=args.sheets_config, xlsx_file=args.xlsx)
-    config.require_xlsx()
+    config = sheets_commands.load_config(args, settings)
+    config.require_file()
     out = extract_to(args.template, settings, args.profile, args.name, args.out, fresh_keys=False)
     print("")
     return sheets_commands.build(out / "manifest.json", settings, config, args.lang)

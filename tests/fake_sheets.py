@@ -15,6 +15,9 @@ class FakeSheets:
     def tabs(self):
         return list(self.grid)
 
+    def labels(self, tab):
+        return None
+
     def missing_values(self, tab):
         return {(r, c) for r, row in enumerate(self.grid[tab], start=1)
                 for c, cell in enumerate(row) if isinstance(cell, F) and cell.value is None}

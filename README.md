@@ -68,10 +68,11 @@ para otro). `--lang esp,deu` genera solo esos idiomas.
 ## 3. La hoja Multidioma.xlsx
 
 `translateML` lee el archivo **sin modificarlo** y no actualiza la hoja de Google. La forma de la hoja
-se describe en `config/sheets.json`. La configuración actual corresponde a la hoja real de Data:
+se describe en la sección `xlsx` de `config/sheets.json`. La configuración actual corresponde a la
+hoja real de Data:
 
 ```json
-{ "header_row": 0, "association": "text", "text_column": "C", "positional_fallback": false }
+"xlsx": { "header_row": 0, "association": "text", "text_column": "C", "positional_fallback": false }
 ```
 
 - Sin fila de cabeceras; numeración en la columna B (se ignora) y texto en la columna **C**.
@@ -155,6 +156,32 @@ En las demás pestañas, `=ENG!A2` copia la clave y `=GOOGLETRANSLATE(ENG!B2,"en
 Requiere `"association": "key"` y `"header_row": 1`. Con este formato las frases de varias líneas se
 traducen línea a línea. No es el formato que usa Data hoy.
 
+### El documento multidioma.docx (Google Docs)
+
+Las traducciones también pueden venir de un documento de Google Docs con **una pestaña por idioma**
+(mismos códigos que las pestañas del `.xlsx`). Descárgalo con **Archivo > Descargar > Microsoft
+Word (.docx)** y pásalo igual que el `.xlsx`: `--file`, `--xlsx` y `--docx` son la misma opción y el
+formato se decide por la extensión del archivo:
+
+```bash
+./translateml.sh generate ../pixi/g490/public/assets/languages/eng/info/info.json --docx ~/Downloads/multidioma.docx
+```
+
+- **Pestañas:** Google Docs exporta cada pestaña como una sección de Word **sin su nombre**, así que se
+  identifican por orden: la 1.ª es la de origen (ENG) y las demás siguen el orden de
+  `config/languages.json` (ENG, ESP, DEU, ELL…, el mismo del `.xlsx`). Si el documento tiene otro orden
+  u otras pestañas, indica `"tabs": ["ENG", "ESP", …]` en la sección `docx` de `config/sheets.json`. Si
+  el número de pestañas no coincide con el de nombres, no se genera nada.
+- **Textos:** cada celda de tabla y cada párrafo con texto es una fila; los párrafos de una celda son
+  sus líneas. Las celdas con solo una numeración (`1`, `2.`) se ignoran (`numbering_pattern`; `""` para
+  no ignorar ninguna) y `"paragraphs": false` lee solo las tablas. La pestaña ENG se asocia con la
+  plantilla por texto exacto, igual que la hoja (frases de varias líneas incluidas).
+- **Traducciones:** se relacionan con ENG por posición (misma celda de la misma tabla). Por eso cada
+  pestaña debe tener **la misma estructura** que ENG (tablas, filas, celdas y párrafos con texto); si
+  no, ese idioma falla con `structure_mismatch` y se indica el primer elemento distinto.
+- Los avisos señalan la ubicación en el documento: `ESP (tabla 2, fila 3, celda 2)`.
+- `docx inspect --file F` indica, por pestaña, si su estructura coincide con ENG (`structure_mismatch`).
+
 ## 4. El informe `xlsx-build-report.json`
 
 Por idioma: `status`, `output`, `applied` (traducciones aplicadas), `missing` (claves que se quedan en
@@ -184,12 +211,15 @@ aplicadas y la columna `MERGED` con las líneas unidas, reutilizables con `rebui
 
 | Comando | Qué hace |
 |---|---|
-| `generate PLANTILLA --xlsx F [--lang …] [--name …] [--out …]` | `extract` + `xlsx build` en un paso |
+| `generate PLANTILLA --file F [--lang …] [--name …] [--out …]` | `extract` + `build` en un paso |
 | `extract PLANTILLA` | Extrae textos y rutas a `output/<juego>/` y conserva las claves anteriores |
-| `xlsx build MANIFEST --xlsx F [--lang …]` | Genera los idiomas desde el `.xlsx` |
-| `xlsx inspect --xlsx F` | Describe pestañas, columnas y fórmulas del archivo (solo lectura) |
-| `xlsx languages --xlsx F` | Lista los 18 idiomas y si su pestaña existe; sugiere nombres parecidos |
-| `xlsx export MANIFEST [--xlsx F]` | Filas `KEY`/`TEXT` para el formato con claves |
+| `xlsx build MANIFEST --file F [--lang …]` | Genera los idiomas desde el archivo |
+| `xlsx inspect --file F` | Describe pestañas, columnas, fórmulas o estructura del archivo (solo lectura) |
+| `xlsx languages --file F` | Lista los 18 idiomas y si su pestaña existe; sugiere nombres parecidos |
+| `xlsx export MANIFEST [--file F]` | Filas `KEY`/`TEXT` para el formato con claves |
+
+`F` es un `.xlsx` o un `.docx`; `--xlsx` y `--docx` son sinónimos de `--file`, y `docx` es sinónimo
+del comando `xlsx` (`docx build …`). Sin `--file` se usa `"file"` de `config/sheets.json`.
 | `analyze PLANTILLA` | Qué se traduciría y qué queda pendiente de revisión, sin escribir nada |
 | `verify PLANTILLA …` | Comprueba que extraer y reconstruir el inglés da el archivo idéntico |
 | `rebuild MANIFEST [--texts CSV] [--lang …]` | Reconstruye un idioma desde un CSV `KEY`,`TEXT` |
@@ -220,7 +250,7 @@ configuración de hoja, por ejemplo una por juego: `xlsx --sheets-config g500.js
 | Archivo | Contenido |
 |---|---|
 | `settings.json` | Carpeta de salida (`output_root`), nombre del archivo (`info.json`), política de traducciones faltantes (`keep_source` o `error`), nombres de columna `KEY`/`TEXT` |
-| `sheets.json` | Forma de la hoja: `header_row` (0 = sin cabeceras), `association` (`text`/`key`), `text_column` (letra), `positional_fallback`, `xlsx_file` por defecto y ajustes por pestaña en `tabs` |
+| `sheets.json` | Archivo por defecto (`file`) y una sección por formato. `xlsx`: `header_row` (0 = sin cabeceras), `association` (`text`/`key`), `text_column` (letra), `positional_fallback`, `key_header`/`text_header` y ajustes por pestaña en `tabs`. `docx`: `tabs` (orden de las pestañas; `null` = orden de `languages.json`), `numbering_pattern`, `paragraphs`. Una clave desconocida es un error; el formato plano anterior se sigue aceptando |
 | `languages.json` | Idioma de origen y los 18 idiomas: `code` (interno), `tab` (pestaña), `folder` (salida), `enabled` |
 | `profiles/pixi_info.json` | Qué partes de la plantilla son texto traducible (sección 7) |
 
@@ -303,10 +333,13 @@ Eso se revisa en el juego (por ejemplo, el jemer usa espacios invisibles `​`).
 | `translateml/export.py` | Manifest, CSV e informes |
 | `translateml/pipeline.py` | Pasos compartidos: cargar manifest y generar un idioma |
 | `translateml/config.py` | `settings.json` y `languages.json` |
-| `translateml/sheets/` | Lectura del `.xlsx` (`xlsx.py`), tabla y fórmulas (`table.py`), asociación (`association.py`), inspección y comandos `xlsx` |
+| `translateml/sheets/` | Archivos de traducciones: interfaz común y elección por extensión (`sources.py`), lectores `.xlsx` (`xlsx.py`) y `.docx` (`docx.py`), configuración (`settings.py`), tabla y fórmulas (`table.py`), asociación (`association.py`), inspección y comandos |
 | `translateml/cli.py` | Línea de comandos |
 
-La extracción y la reconstrucción usan solo la biblioteca estándar; `openpyxl` solo se importa al leer un `.xlsx`.
+Para añadir otro formato basta una clase que cumpla `Source` (pestañas con filas de texto, su
+`layout` y `alignment_problem`) y una entrada en `READERS` de `sources.py`; la asociación no cambia.
+
+La extracción, la reconstrucción y la lectura del `.docx` usan solo la biblioteca estándar; `openpyxl` solo se importa al leer un `.xlsx`.
 
 ### Pruebas
 
@@ -320,6 +353,8 @@ La extracción y la reconstrucción usan solo la biblioteca estándar; `openpyxl
 - Las pruebas usan su propia configuración (`tests/fixtures/`), no la del proyecto.
 - Prueba de integración con el archivo real, opcional:
   `TRANSLATEML_REAL_XLSX=~/Downloads/Multidioma.xlsx .venv/bin/python -B -m unittest tests.test_xlsx.RealXlsxTest`
+  y `TRANSLATEML_REAL_DOCX=~/Downloads/multidioma.docx .venv/bin/python -B -m unittest tests.test_docx.RealDocxTest`
+- Los `.docx` de prueba se crean como los exporta Google Docs: una sección por pestaña (`tests/docx_builder.py`).
 
 ### Distribuir
 
